@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/jmoiron/sqlx"
 	"github.com/gofiber/storage/sqlite3/v2"
+	"crow/help/strs"
 	
 )
 
@@ -26,7 +27,7 @@ func BasicStart(app *fiber.App){
 		Format: "${time} | ${status} | ${latency} | ${method} ${path}\n",
 	}))
 
-	gob.Register(&User{}) 
+	gob.Register(&strs.User{}) 
 
 	storage := sqlite3.New(sqlite3.Config{
         Database: "./data.db",   // can be the same file as your app DB, or separate
@@ -83,7 +84,7 @@ func Logcheck(c fiber.Ctx) bool {
 }
 
 func Signup(c fiber.Ctx, db *sqlx.DB) error {
-    user := new(User)
+    user := new(strs.User)
 
     if err := c.Bind().Form(user); err != nil {
         return err
@@ -109,7 +110,7 @@ func Signup(c fiber.Ctx, db *sqlx.DB) error {
 }
 
 func Login(c fiber.Ctx, db *sqlx.DB) error {
-	user:= new(User)
+	user:= new(strs.User)
 
 	if err:= c.Bind().Form(user); err!=nil {
 		return err
@@ -118,7 +119,7 @@ func Login(c fiber.Ctx, db *sqlx.DB) error {
         return err
     }
 
-	dbuser := new(User)
+	dbuser := new(strs.User)
 	err:= db.Get(dbuser, "select * from users where userName= $1", user.UserName)
 
 	if err!= nil {

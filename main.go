@@ -4,6 +4,7 @@ import (
 	"crow/frontend/mark/comp"
 	"crow/frontend/mark/pages"
 	"crow/help"
+	"crow/help/strs"
 	"github.com/gofiber/fiber/v3"
 	//"github.com/gofiber/fiber/v3/middleware/session"
 	"github.com/joho/godotenv"
@@ -77,27 +78,28 @@ func main() {
 
 	//dashboard
 	app.Get("/dash", help.Authmid, func(c fiber.Ctx) error {
-		user:= c.Locals("user").(*help.User)
+		user:= c.Locals("user").(*strs.User)
 		return help.Hrender(c, pages.Dash(user))
 	})
 
 	app.Post("/dashNav", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
 		target := c.FormValue("target")
 		switch target {
 		case "Contact":
-			return help.Render(c, comp.ContactMod())
+			return help.Render(c, comp.ContactMod(user))
 		case "Candidats":
-			return help.Render(c, comp.CandidatsMod())
+			return help.Render(c, comp.CandidatsMod(user))
 		case "Atelier":
-			return help.Render(c, comp.AtelierMod())
+			return help.Render(c, comp.AtelierMod(user))
 		case "Comptes":
-			return help.Render(c, comp.ComptesMod())
+			return help.Render(c, comp.ComptesMod(user))
 		case "Project":
-			return help.Render(c, comp.ProjetsMod())
+			return help.Render(c, comp.ProjetsMod(user))
 		case "Stars":
-			return help.Render(c, comp.StarsMod())
+			return help.Render(c, comp.StarsMod(user))
 		case "Messages":
-			return help.Render(c, comp.MessagesMod())
+			return help.Render(c, comp.MessagesMod(user))
 		}
 		return c.SendString("page introuvable")
 	})
