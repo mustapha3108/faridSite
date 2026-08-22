@@ -1,0 +1,26 @@
+{
+    "templ.goplsPath": "gopls",
+    "templ.templPath": "go run github.com/a-h/templ/cmd/templ@latest",
+    "tailwindCSS.includeLanguages": {
+        "templ": "html"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "htmx.includeLanguages": {
+        "templ": "html"
+    },
+    "alpinejs.includeLanguages": {
+        "templ": "html"
+    },
+    "javascript.suggest.autoImports": true,
+    "js/ts.implicitProjectConfig.checkJs": false,
+
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.snippetSuggestions": "top",
+    "emmet.includeLanguages": {
+        "templ": "html"
+    },
+    "emmet.triggerExpansionOnTab": true,
+    "css.lint.unknownAtRules": "ignore"
+}

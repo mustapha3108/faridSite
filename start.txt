@@ -1,0 +1,61 @@
+TODO:
+-5 pages + dashboard
+-accounts + create accounts
+-notificatiosn for contact and job applications
+-crud projects
+-rating systems
+-job applications
+-add and modify atelier page
+-modify contact page
+-books
+-
+database tables
+-users
+-projects
+-ratings
+-team
+-contact
+-candidats
+
+
+
+
+
+
+don't forget to change package names in base and main
+
+
+
+
+npm init
+download tailwin cli: npm install tailwindcss @tailwindcss/cli
+download esbuild: npm install --save-exact --save-dev esbuild
+downlaod alpine: npm install alpinejs
+downlaod daisyui: npm i -D daisyui@latest
+doanload htmx: npm install htmx.org@2.0.8
+
+download fiber : go get github.com/gofiber/fiber/v3
+download templ as a tool : go get -tool github.com/a-h/templ/cmd/templ@latest
+air init, add dev, frontedn/glitter to excluded
+-dev
+	-glitter
+	-node modules
+-frontend
+	-glitter
+	-media
+	-mark
+		-comp
+		-pages
+
+IN PRODUCTION DO NOT FORGET TO TRUN ON FIREWALL FOR THOSE PORTS
+
+postgres:
+	install: sudo apt install postgresql postgresql-contrib / sudo nano /etc/redis/redis.conf to change port / systemctl like normal
+	logging in: sudo -u postgres psql
+	create user (so i don't use root user for security reasons) : CREATE USER crow WITH PASSWORD 'crow';
+	create database: CREATE DATABASE go_app_name OWNER crow;
+
+	dev:  psql -U crow -d infinitevoid -h 127.0.0.1 -p 3002 / 
+
+redis:
+	install: sudo apt install redis-server / sudo nano /etc/redis/redis.conf for port and password / systemcctl like normal

@@ -1,0 +1,32 @@
+package comp
+
+
+templ Layout(comp templ.Component){
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>     
+        <link rel="stylesheet" href="app.css"> 
+        <script defer src="app.js"></script>
+    </head>
+    <body class="min-h-screen" hx-boost="true" hx-target="#content" data-theme="abyss">
+
+        <div
+            x-data="{loading: false}"
+            class="progress-bar" :class="{'active': loading}"
+            x-on:htmx:before-request.window="loading = false; $nextTick(() => loading = true)"
+            x-on:htmx:after-swap.window="loading=false">
+        </div>
+
+
+        <div id="content" class="">
+            @comp
+        </div>
+
+    </body>
+    </html>
+
+}

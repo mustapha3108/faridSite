@@ -1,0 +1,27 @@
+package pages
+
+import (
+    "crow/frontend/mark/comp"
+)
+
+templ Chief(){
+    @comp.Navbar()
+    <div class="h-screen flex justify-center items-center">
+        <div class="">
+            <form hx-post="/login" hx-target="#loginRes" class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+              <legend class="fieldset-legend">Login</legend>
+
+              <label class="label">name</label>
+              <input type="text"      class="input" name="userName" placeholder="name" />
+
+              <label class="label">Password</label>
+              <input type="password"  class="input" name="Password" placeholder="Password" />
+
+              <button class="btn btn-neutral mt-4">Login</button>
+            </form>
+
+            <div id="loginRes"></div>
+
+        </div>
+    </div>
+}
