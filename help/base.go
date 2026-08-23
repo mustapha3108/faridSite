@@ -3,7 +3,6 @@ package help
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"crow/frontend/mark/comp"
 	"mime/multipart"
 	"path/filepath"
@@ -39,20 +38,20 @@ func Redirect(c fiber.Ctx, path string) error {
 }
 
 func SaveImage(c fiber.Ctx, image *multipart.FileHeader) (string, error) {
-	if !IsImage(image) {
-		return "", errors.New("not supported image type")
-	}
-	ext:= filepath.Ext(image.Filename)
-	name:= uuid.New().String() + ext
-	path:= fmt.Sprintf("frontend/glitter/media/dynamic/%s", name)
-	if err:= c.SaveFile(image, path); err!=nil {
-		return "", err
-	}
-	return "media/dynamic/" + name, nil
+    if !IsImage(image) {
+        return "", errors.New("not supported image type")
+    }
+    ext := strings.ToLower(filepath.Ext(image.Filename))
+    name := uuid.New().String() + ext
+    path := filepath.Join("frontend", "glitter", "media", "dynamic", name)
+    if err := c.SaveFile(image, path); err != nil {
+        return "", err
+    }
+    return "media/dynamic/" + name, nil
 }
 
 //checking stuff and manual security 
-const MaxImageSize = 5 * 1024 * 1024
+const MaxImageSize = 6 * 1024 * 1024
 func IsImage(file *multipart.FileHeader) bool {
 
 	// ─── Size check ──────────────────────────────────────────────────────────
@@ -86,11 +85,11 @@ func IsImage(file *multipart.FileHeader) bool {
 			return len(b) >= 3 &&
 				b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF
 		},
-		func(b []byte) bool { // GIF
-			return len(b) >= 6 &&
-				b[0] == 0x47 && b[1] == 0x49 && b[2] == 0x46 &&
-				b[3] == 0x38 && (b[4] == 0x37 || b[4] == 0x39) && b[5] == 0x61
-		},
+		//func(b []byte) bool { // GIF
+		//	return len(b) >= 6 &&
+		//		b[0] == 0x47 && b[1] == 0x49 && b[2] == 0x46 &&
+		//		b[3] == 0x38 && (b[4] == 0x37 || b[4] == 0x39) && b[5] == 0x61
+		//},
 		func(b []byte) bool { // WEBP
 			return len(b) >= 12 &&
 				b[0] == 0x52 && b[1] == 0x49 && b[2] == 0x46 && b[3] == 0x46 &&

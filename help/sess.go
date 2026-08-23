@@ -18,7 +18,7 @@ import (
 	
 )
 
-var validate = validator.New()
+var Validate = validator.New()
 func BasicStart(app *fiber.App){
 
 	app.Use("/*", static.New("frontend/glitter/"))
@@ -89,7 +89,7 @@ func Signup(c fiber.Ctx, db *sqlx.DB) error {
     if err := c.Bind().Form(user); err != nil {
         return err
     }
-	if err := validate.Struct(user); err != nil {
+	if err := Validate.Struct(user); err != nil {
         return err
     }
 
@@ -115,7 +115,7 @@ func Login(c fiber.Ctx, db *sqlx.DB) error {
 	if err:= c.Bind().Form(user); err!=nil {
 		return err
 	}
-	if err := validate.Struct(user); err != nil {
+	if err := Validate.Struct(user); err != nil {
         return err
     }
 

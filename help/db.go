@@ -31,14 +31,15 @@ func BasicDb() *sqlx.DB {
 			userId 		INTEGER PRIMARY KEY AUTOINCREMENT,
 			userName 	TEXT NOT NULL UNIQUE,
 			password 	TEXT NOT NULL,
-			access 		INTEGER NOT NULL
+			access 		TEXT NOT NULL
 		);`,
 		`CREATE TABLE IF NOT EXISTS projects (
 			projectId 	INTEGER PRIMARY KEY AUTOINCREMENT,
 			userId 		INTEGER NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
-			projectName TEXT NOT NULL,
+			projectName TEXT NOT NULL UNIQUE,
 			description TEXT NOT NULL,
-			imagePaths 	TEXT NOT NULL
+			imagePaths 	TEXT NOT NULL,
+			mImagePath  TEXT NOT NULL
 		);`,
 		`CREATE TABLE IF NOT EXISTS ratings(
 			ratingId 	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +77,11 @@ func BasicDb() *sqlx.DB {
 			email 		TEXT NOT NULL,
 			object 		TEXT NOT NULL,
 			message 	TEXT NOT NULL
+		)`,
+		`CREATE TABLE IF NOT EXISTS partenairs(
+			partenairId   INTEGER PRIMARY KEY AUTOINCREMENT,
+			partenairName TEXT NOT NULL,
+			imagePath     TEXT NOT NULL
 		)`,
 	}
 
