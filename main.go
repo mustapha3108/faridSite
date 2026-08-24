@@ -5,7 +5,9 @@ import (
 	"crow/frontend/mark/pages"
 	"crow/help"
 	"crow/help/strs"
+	"log"
 	"strings"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
 )
@@ -94,7 +96,7 @@ func main() {
 			return help.Render(c, comp.AtelierMod(user))
 		case "Comptes":
 			return help.Render(c, comp.ComptesMod(user))
-		case "Project":
+		case "Projets":
 			return help.Render(c, comp.ProjetsMod(user))
 		case "Stars":
 			return help.Render(c, comp.StarsMod(user))
@@ -110,6 +112,7 @@ func main() {
 		return c.SendString("page introuvable")
 	})
 
+	//upload project
 	app.Post("/uploadProject", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
 		if !strings.Contains(user.Access, "c"){
@@ -122,10 +125,56 @@ func main() {
 		if err:= help.Validate.Struct(project); err!=nil {
 			return c.SendString(help.ShowError(err))
 		} 
-		//i am fucking stupid, just create a random name for each one, then save all the pics in dynamix folder, wtf man don't over complicate your life
-		//TODO: WRITE A FORM FOR PROJECTS, ADD CRUD FOR REST TOO
 
+		//userid
+		project.UserId = user.UserId
 
+		//main image path
+		mPath, err := help.SaveImage(c, project.MImage)
+		if err != nil {
+			return c.SendString(help.ShowError(err))
+		}
+		project.MImagePath = mPath
+
+		//image paths
+		for _, image := range project.Images {
+			path, err := help.SaveImage(c, image)
+			if err!= nil {
+				if err:= help.DeleteImage(project.MImagePath); err!=nil {
+					return c.SendString(help.ShowError(err))
+				}
+				project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
+				toDelete := strings.Split(project.ImagePaths, ";")
+				for _, v := range toDelete {
+					if err :=help.DeleteImage(v); err!= nil {
+						return c.SendString(help.ShowError(err))
+					}
+				}
+				return c.SendString(help.ShowError(err))
+			}
+			project.ImagePaths = project.ImagePaths + path + ";"
+		}
+		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
+
+		//enter into te database
+		_, err = db.NamedExec(
+		    `INSERT INTO projects (userId, categoryId, projectName, description, imagePaths, mImagePath)
+		     VALUES (:userId, :categoryId, :projectName, :description, :imagePaths, :mImagePath)`,
+		    project,
+		)
+		if err != nil {
+			log.Printf("insert error: %v | project: %+v\n", err, project)
+			toDelete := strings.Split(project.ImagePaths, ";")
+			for _, v := range toDelete {
+				if err :=help.DeleteImage(v); err!= nil {
+					return c.SendString(help.ShowError(err))
+				}
+			}
+			if err:= help.DeleteImage(project.MImagePath); err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+		    return c.SendString(help.ShowError(err))
+		}
 		return c.SendString("Projet créé avec succès")
 
 	})

@@ -33,9 +33,17 @@ func BasicDb() *sqlx.DB {
 			password 	TEXT NOT NULL,
 			access 		TEXT NOT NULL
 		);`,
+		`
+		CREATE TABLE IF NOT EXISTS categories(
+			categoryId   INTEGER PRIMARY KEY AUTOINCREMENT,
+			categoryName TEXT NOT NULL unique,
+			imagePath    TEXT NOT NULL
+		)
+		`,
 		`CREATE TABLE IF NOT EXISTS projects (
 			projectId 	INTEGER PRIMARY KEY AUTOINCREMENT,
-			userId 		INTEGER NOT NULL REFERENCES users(userid) ON DELETE CASCADE,
+			userId 		INTEGER NOT NULL REFERENCES users(userid) ON DELETE  SET NULL,
+			categoryId  INTEGER NOT NULL REFERENCES categories(categoryId) ON DELETE SET NULL,
 			projectName TEXT NOT NULL UNIQUE,
 			description TEXT NOT NULL,
 			imagePaths 	TEXT NOT NULL,

@@ -11,9 +11,17 @@ type User struct {
 	Access   string `db:"access"   form:"Access"   validate:"omitempty,max=20"`
 }
 
+type Category struct {
+	CategoryId   int                   `db:"categoryId"`
+	CategoryName string                `db:"categoryName" form:"CategoryName" validate:"required,min=2,max=150"`
+	ImagePath    string                `db:"imagePath"`
+	Image        *multipart.FileHeader `db:"-" form:"Image" validate:"required"`
+}
+
 type Project struct {
 	ProjectId   int                     `db:"projectId"`
 	UserId      int                     `db:"userId"`
+	CategoryId  int                     `db:"categoryId"`
 	ProjectName string                  `db:"projectName" form:"ProjectName" validate:"required,min=2,max=150"`
 	Description string                  `db:"description" form:"Description" validate:"required,min=5,max=5000"`
 	ImagePaths  string                  `db:"imagePaths"`

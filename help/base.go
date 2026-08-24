@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"strings"
+	"os"
 
 	"github.com/a-h/templ"
 	"github.com/go-playground/validator/v10"
@@ -50,8 +51,19 @@ func SaveImage(c fiber.Ctx, image *multipart.FileHeader) (string, error) {
     return "media/dynamic/" + name, nil
 }
 
+func DeleteImage(storedPath string) error {
+    fullPath := filepath.Join("frontend", "glitter", storedPath)
+    if err := os.Remove(fullPath); err != nil {
+        if os.IsNotExist(err) {
+            return nil
+        }
+        return err
+    }
+    return nil
+}
+
 //checking stuff and manual security 
-const MaxImageSize = 6 * 1024 * 1024
+const MaxImageSize = 8 * 1024 * 1024
 func IsImage(file *multipart.FileHeader) bool {
 
 	// ─── Size check ──────────────────────────────────────────────────────────
