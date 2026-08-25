@@ -7,8 +7,8 @@ import (
 type User struct {
 	UserId   int    `db:"userId"`
 	UserName string `db:"userName" form:"UserName" validate:"required,min=3,max=50"`
-	Password string `db:"password" form:"Password" validate:"required,min=6,max=100"`
-	Access   string `db:"access"   form:"Access"   validate:"omitempty,max=20"`
+	Password string `db:"password" form:"Password" validate:"required,min=6,max=12"`
+	Access   string `db:"access"   form:"Access"   validate:"required,max=4"`
 }
 
 type Category struct {

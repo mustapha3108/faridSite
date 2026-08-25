@@ -3,11 +3,9 @@ package help
 import (
 	"log"
 	"os"
-	_ "modernc.org/sqlite"
 	"github.com/jmoiron/sqlx"
+	_ "modernc.org/sqlite"
 )
-
-
 
 // database
 func BasicDb() *sqlx.DB {
@@ -26,15 +24,14 @@ func BasicDb() *sqlx.DB {
 	}
 
 	tables := []string{
-		//1=all, 2=create, 3=delete, 4=modify, 5=create+delete, 6=create+modify, 7=delete+modify
+		//fcmd
 		`CREATE TABLE IF NOT EXISTS users (
 			userId 		INTEGER PRIMARY KEY AUTOINCREMENT,
 			userName 	TEXT NOT NULL UNIQUE,
 			password 	TEXT NOT NULL,
 			access 		TEXT NOT NULL
 		);`,
-		`
-		CREATE TABLE IF NOT EXISTS categories(
+		`CREATE TABLE IF NOT EXISTS categories(
 			categoryId   INTEGER PRIMARY KEY AUTOINCREMENT,
 			categoryName TEXT NOT NULL unique,
 			imagePath    TEXT NOT NULL
@@ -58,7 +55,7 @@ func BasicDb() *sqlx.DB {
 		`CREATE TABLE IF NOT EXISTS members(
 			memberId 			INTEGER PRIMARY KEY AUTOINCREMENT,
 			memberName 			TEXT NOT NULL,
-			memberTitle 		TEXT,
+			memberTitle 		TEXT NOT NULL,
 			memberDescription   TEXT,
 			memberImagePath 	TEXT NOT NULL
 		)`,
@@ -76,9 +73,9 @@ func BasicDb() *sqlx.DB {
 			lastName    TEXT NOT NULL,
 			email 		TEXT NOT NULL,
 			object 		TEXT NOT NULL,
-			message 	TEXT NOT NULL
+			message 	TEXT NOT NULL,
 		)`,//gotta add some columns here
-		`CREATE TABLE IF NOT EXISTS jobApplication(
+		`CREATE TABLE IF NOT EXISTS jobApplications(
 			apId		INTEGER PRIMARY KEY AUTOINCREMENT,
 			firstName 	TEXT NOT NULL,
 			lastName    TEXT NOT NULL,
@@ -91,6 +88,14 @@ func BasicDb() *sqlx.DB {
 			partenairName TEXT NOT NULL,
 			imagePath     TEXT NOT NULL
 		)`,
+		`CREATE TABLE IF NOT EXISTS messNot(
+			messNotId     INTEGER PRIMARY KEY AUTOINCREMENT,
+			messageId     INTEGER NOT NULL REFERENCES messages(messageId) ON DELETE CASCADE
+		)`,
+		`CREATE TABLE IF NOT EXISTS canNot(
+			canNotId     INTEGER PRIMARY KEY AUTOINCREMENT,
+			candidatId   INTEGER NOT NULL REFERENCES jobApplication(apId) ON DELETE CASCADE
+		)`,
 	}
 
 	for _, v := range tables {
@@ -99,5 +104,37 @@ func BasicDb() *sqlx.DB {
 		}
 	}
 
+	fPassword, err := Encode("farid5169")
+	if err!=nil{
+		log.Fatal("error creating: 	", err)
+	}
+
+	_,err = db.Exec(`INSERT OR IGNORE INTO users VALUES(?,?,?,?)`, 1, "farid", fPassword, "fcmd")
+	if err!=nil {
+		log.Fatal("error creating: 	", err)
+	}
+
+	devPassword, err := Encode("crow3108")
+	if err!=nil{
+		log.Fatal("error creating: 	", err)
+	}
+
+	_,err = db.Exec(`INSERT OR IGNORE INTO users VALUES(?,?,?,?)`, 1, "dev", devPassword, "sss")
+	if err!=nil {
+		log.Fatal("error creating: 	", err)
+	}
+	
+
 	return db
+}
+
+
+//delete database
+func DeleteTable(db *sqlx.DB) {
+	tables := []string{"users", "categories", "projects", "ratings", "members", "contact", "messages", "jobApplications", "partenairs", "messNot", "canNot"}
+	for _,v := range(tables) {
+		if _, err:= db.Exec(`DROP TABLE ?`, v); err!=nil {
+			log.Fatal("error creating: 	", err)
+		}
+	}
 }

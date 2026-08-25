@@ -144,3 +144,11 @@ func Logout(c fiber.Ctx) error {
 	}
 	return nil
 }
+
+func Encode(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err!= nil{
+		return "", err
+	}
+	return string(bytes), err
+}
