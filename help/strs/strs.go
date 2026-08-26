@@ -71,6 +71,7 @@ type JobApplication struct {
 	Email     string `db:"email"     form:"Email"     validate:"required,email,max=100"`
 	Object    string `db:"object"    form:"Object"    validate:"required,min=2,max=150"`
 	Message   string `db:"message"   form:"Message"   validate:"required,min=5,max=3000"`
+	Software  string `db:"software"   form:"Software" validate:"required,min=5,max=3000"`
 }
 
 type Partenair struct {

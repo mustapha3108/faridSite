@@ -19,7 +19,7 @@ func main() {
 
 
 	//TODO:=CREATE DEV INTERFACE FOR RESET PASSWORDs (dev and farid), CREATE FORMS FOR EVERYTHING
-	//projects, jobAppilcations, cannot
+	//projects, jobAppilcations, software, cannot
 	//
 
 	godotenv.Load()
@@ -536,6 +536,28 @@ func main() {
 	//job applications
 	app.Post("/apply", func (c fiber.Ctx) error  {
 		//logic
+		apply:= new(strs.JobApplication)
+		if err:=c.Bind().Form(apply); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		if err:= help.Validate.Struct(apply); err!=nil {
+			return c.SendString(help.ShowError(err))
+		} 
+
+		res,err := db.Exec(`INSERT INTO jobAppilcations (firstName, lastName, email, object, message, software) VALUES (?,?,?,?,?,?)`,
+						apply.FirstName, apply.LastName, apply.Email, apply.Object, apply.Message, apply.software)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		} else {
+			id, err := res.LastInsertId()
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			_,err = db.Exec(`INSERT INTO canNot (candidatId) VALUES (?)`, id)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+		}
 		c.Set("HX-Trigger", "success")
 		return c.SendStatus(200)
 	})
@@ -559,6 +581,8 @@ func main() {
 		c.Set("HX-Trigger", "success")
 		return c.SendStatus(200)
 	})
+
+	//add software
 
 	
 	
