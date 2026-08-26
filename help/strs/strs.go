@@ -34,7 +34,7 @@ type Rating struct {
 	RatingId int    `db:"ratingId"`
 	Name     string `db:"name"     form:"Name"    validate:"required,min=2,max=60"`
 	Comment  string `db:"comment"  form:"Comment" validate:"omitempty,max=1000"`
-	Rating   int    `db:"rating"   form:"Rating"  validate:"required,gte=0,lte=50"`
+	Rating   int    `db:"rating"   form:"Rating"  validate:"required,gte=0,lte=5"`
 }
 
 type Member struct {

@@ -2,30 +2,46 @@ package pages
 
 import (
     "crow/help/strs"
+    "strings"
 )
 
 templ Dash(user *strs.User) {
-    <div class="drawer lg:drawer-open">
+    <!-- Added x-data state, window event listener for HTMX trigger, and HTMX 5s polling -->
+    <div class="drawer lg:drawer-open" 
+        if strings.Contains(user.Access, "f"){
+          x-data="{ messages: 0, candidats: 0 }"
+          x-on:notif.window="messages = $event.detail.messages; candidats = $event.detail.candidats"
+          hx-post="/updateNotif" 
+          hx-trigger="load, every 30s"
+          hx-swap="none"
+        }
+         >
       <input id="my-drawer-4" type="checkbox" class="drawer-toggle inline" />
       <div class="drawer-content">
         <!-- Navbar -->
         <nav class="navbar w-full bg-base-300">
           <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost drawer-button">
-            <!-- Sidebar toggle icon -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-logs-icon lucide-logs"><path d="M3 5h1"/><path d="M3 12h1"/><path d="M3 19h1"/><path d="M8 5h1"/><path d="M8 12h1"/><path d="M8 19h1"/><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/></svg>
           </label>
           <div class="px-4">{user.UserName} with id {user.UserId}</div>
         </nav>
         <!-- Page content here -->
-        <div id="dashContent" class="flex justify-center items-center">welcome back {user.UserName}</div>
+        <div id="dashContent" class="flex justify-center items-center">
+          <h1>welcome back {user.UserName}</h1>
+          <div>
+            <p>nombre de messages: <span x-text="messages"></span></p>
+          </div>
+
+          <div>
+            <p>nombre de candidats: <span x-text="candidats"></span></p>
+          </div>
+        </div>
       </div>
 
       <div class="drawer-side is-drawer-close:overflow-visible">
         <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
         <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-          <!-- Sidebar content here -->
           <ul class="menu w-full grow mt-12">
-            <!-- List item -->
             <li>
               @link("Contact"){
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -34,7 +50,10 @@ templ Dash(user *strs.User) {
 
             <li>
               @link("Candidats"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-user-icon lucide-file-user"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M16 22a4 4 0 0 0-8 0"/><circle cx="12" cy="15" r="3"/></svg>
+                <div class="relative flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-user-icon lucide-file-user"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M16 22a4 4 0 0 0-8 0"/><circle cx="12" cy="15" r="3"/></svg>
+                  <span x-show="candidats > 0" x-text="candidats" class="badge badge-error badge-xs ml-1"></span>
+                </div>
               }
             </li>
 
@@ -64,7 +83,10 @@ templ Dash(user *strs.User) {
 
             <li>
               @link("Messages"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
+                <div class="relative flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
+                  <span x-show="messages > 0" x-text="messages" class="badge badge-error badge-xs ml-1"></span>
+                </div>
               }
             </li>
 
@@ -73,8 +95,6 @@ templ Dash(user *strs.User) {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out-icon lucide-log-out"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
               }
             </li>
-            <!-- sidebar content over -->
-
           </ul>
         </div>
       </div>

@@ -81,7 +81,8 @@ func BasicDb() *sqlx.DB {
 			lastName    TEXT NOT NULL,
 			email 		TEXT NOT NULL,
 			object 		TEXT NOT NULL,
-			message 	TEXT NOT NULL
+			message 	TEXT NOT NULL,
+			software    TEXT NOT NULL
 		)`,
 		`CREATE TABLE IF NOT EXISTS partenairs(
 			partenairId   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,6 +96,11 @@ func BasicDb() *sqlx.DB {
 		`CREATE TABLE IF NOT EXISTS canNot(
 			canNotId     INTEGER PRIMARY KEY AUTOINCREMENT,
 			candidatId   INTEGER NOT NULL REFERENCES jobApplication(apId) ON DELETE CASCADE
+		)`,
+		`CREATE TABLE IF NOT EXISTS software(
+			softwareId   INTEGER PRIMARY KEY AUTOINCREMENT,
+			softwareName TEXT NOT NULL UNIQUE,
+			required     INTEGER NOT NULL DEFAULT 0
 		)`,
 	}
 
