@@ -1,0 +1,106 @@
+package forms
+
+templ CreateUserForm() {
+    <div class="card bg-base-100 w-full max-w-lg mx-auto shadow-xl border border-base-300">
+        <div class="card-body">
+            <h2 class="card-title text-xl font-bold mb-4">Créer un nouvel utilisateur</h2>
+
+            <form
+                hx-post="/createUser"
+                hx-target-error="#res"
+                hx-swap="none"
+                x-data="{ 
+                    username: '', 
+                    password: '', 
+                    roles: [], 
+                    get accessString() { return this.roles.join(''); } 
+                }"
+                @htmx:after-request="if (detail.successful) { username = ''; password = ''; roles = []; }"
+                class="space-y-4"
+            >
+                <!-- Username -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-medium">Nom d'utilisateur</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="UserName"
+                        x-model="username"
+                        placeholder="ex: johndoe"
+                        class="input input-bordered w-full"
+                        required
+                        minlength="3"
+                        maxlength="50"
+                    />
+                </div>
+
+                <!-- Password -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-medium">Mot de passe</span>
+                    </label>
+                    <input
+                        type="password"
+                        name="Password"
+                        x-model="password"
+                        placeholder="••••••••"
+                        class="input input-bordered w-full"
+                        required
+                        minlength="6"
+                        maxlength="12"
+                    />
+                </div>
+
+                <!-- Access Rights (cmd) -->
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text font-medium">Droits d'accès</span>
+                    </label>
+                    
+                    <div class="grid grid-cols-3 gap-2 bg-base-200 p-3 rounded-lg">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input
+                                type="checkbox"
+                                value="c"
+                                x-model="roles"
+                                class="checkbox checkbox-primary checkbox-sm"
+                            />
+                            <span class="label-text">Créer (c)</span>
+                        </label>
+
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input
+                                type="checkbox"
+                                value="m"
+                                x-model="roles"
+                                class="checkbox checkbox-primary checkbox-sm"
+                            />
+                            <span class="label-text">Modifier (m)</span>
+                        </label>
+
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input
+                                type="checkbox"
+                                value="d"
+                                x-model="roles"
+                                class="checkbox checkbox-primary checkbox-sm"
+                            />
+                            <span class="label-text">Supprimer (d)</span>
+                        </label>
+                    </div>
+
+                    <!-- Concatenated access string (e.g., "cmd", "cm", "d") -->
+                    <input type="hidden" name="Access" :value="accessString" />
+                </div>
+
+                <!-- Submit Button -->
+                <div class="card-actions justify-end pt-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Créer l'utilisateur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

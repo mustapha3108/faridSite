@@ -52,6 +52,9 @@ func SaveImage(c fiber.Ctx, image *multipart.FileHeader) (string, error) {
 }
 
 func DeleteImage(storedPath string) error {
+	if storedPath == "" {
+		return nil
+	}
     fullPath := filepath.Join("frontend", "glitter", storedPath)
     if err := os.Remove(fullPath); err != nil {
         if os.IsNotExist(err) {
@@ -62,10 +65,38 @@ func DeleteImage(storedPath string) error {
     return nil
 }
 
+
+func SavePDF(c fiber.Ctx, file *multipart.FileHeader) (string, error) {
+	if !IsPDF(file) {
+		return "", errors.New("not supported pdf type")
+	}
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	name := uuid.New().String() + ext
+	path := filepath.Join("frontend", "glitter", "media", "pdf", name)
+	if err := c.SaveFile(file, path); err != nil {
+		return "", err
+	}
+	return "media/pdf/" + name, nil
+}
+
+func DeletePDF(storedPath string) error {
+	if storedPath == "" {
+		return nil
+	}
+	fullPath := filepath.Join("frontend", "glitter", storedPath)
+	if err := os.Remove(fullPath); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
 //checking stuff and manual security 
 const MaxImageSize = 8 * 1024 * 1024
-func IsImage(file *multipart.FileHeader) bool {
 
+func IsImage(file *multipart.FileHeader) bool {
 	// ─── Size check ──────────────────────────────────────────────────────────
 	if file.Size > MaxImageSize {
 		return false
@@ -97,28 +128,11 @@ func IsImage(file *multipart.FileHeader) bool {
 			return len(b) >= 3 &&
 				b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF
 		},
-		//func(b []byte) bool { // GIF
-		//	return len(b) >= 6 &&
-		//		b[0] == 0x47 && b[1] == 0x49 && b[2] == 0x46 &&
-		//		b[3] == 0x38 && (b[4] == 0x37 || b[4] == 0x39) && b[5] == 0x61
-		//},
 		func(b []byte) bool { // WEBP
 			return len(b) >= 12 &&
-				b[0] == 0x52 && b[1] == 0x49 && b[2] == 0x46 && b[3] == 0x46 &&
-				b[8] == 0x57 && b[9] == 0x45 && b[10] == 0x42 && b[11] == 0x50
+				b[0] == 0x52 && b[1] == 0x49 && b[2] == 0x2A && b[3] == 0x46 && // R I F F
+				b[8] == 0x57 && b[9] == 0x45 && b[10] == 0x42 && b[11] == 0x50 // W E B P
 		},
-		// func(b []byte) bool { // BMP
-		// 	return len(b) >= 2 && b[0] == 0x42 && b[1] == 0x4D
-		// },
-		// func(b []byte) bool { // TIFF
-		// 	return len(b) >= 4 &&
-		// 		((b[0] == 0x49 && b[1] == 0x49 && b[2] == 0x2A && b[3] == 0x00) ||
-		// 		 (b[0] == 0x4D && b[1] == 0x4D && b[2] == 0x00 && b[3] == 0x2A))
-		// },
-		// func(b []byte) bool { // SVG — disabled, can contain JS
-		// 	return len(b) >= 5 &&
-		// 		(string(b[:4]) == "<svg" || string(b[:5]) == "<?xml")
-		// },
 	}
 
 	matched := false
@@ -133,17 +147,17 @@ func IsImage(file *multipart.FileHeader) bool {
 	}
 
 	// ─── Polyglot checks ──────────────────────────────────────────────────────
-	// reject ZIP-based polyglots (ZIP, JAR, DOCX etc embedded in image)
+	// Reject ZIP-based polyglots (ZIP, JAR, DOCX etc embedded in image)
 	if len(buf) >= 4 && buf[0] == 0x50 && buf[1] == 0x4B && buf[2] == 0x03 && buf[3] == 0x04 {
 		return false
 	}
 
-	// reject PDF polyglots
+	// Reject PDF polyglots
 	if len(buf) >= 4 && string(buf[:4]) == "%PDF" {
 		return false
 	}
 
-	// reject PHP/script injection in the first bytes
+	// Reject PHP/script injection in the first bytes
 	dangerousPatterns := []string{
 		"<?php", "<?=", "<script", "<%", "#!/",
 	}
@@ -154,20 +168,69 @@ func IsImage(file *multipart.FileHeader) bool {
 		}
 	}
 
-	// reject files with null bytes in unexpected places (common in exploit payloads)
+	return true
+}
+
+const MaxPDFSize = 10 * 1024 * 1024
+func IsPDF(file *multipart.FileHeader) bool {
+
+	// ─── Size check ──────────────────────────────────────────────────────────
+	if file.Size > MaxPDFSize {
+		return false
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	buf := make([]byte, 261)
+	n, err := f.Read(buf)
+	if err != nil || n < 8 {
+		return false
+	}
+	buf = buf[:n]
+
+	// ─── Magic byte check ──────────────────────────────────────────────────────
+	// PDF files start with "%PDF-" followed by a version number, e.g. "%PDF-1.7"
+	if !(len(buf) >= 5 && string(buf[:5]) == "%PDF-") {
+		return false
+	}
+
+	// ─── Polyglot check ──────────────────────────────────────────────────────
+	// reject ZIP-based polyglots (ZIP/JAR/DOCX/etc. smuggled inside a PDF-labeled file)
+	if len(buf) >= 4 && buf[0] == 0x50 && buf[1] == 0x4B && buf[2] == 0x03 && buf[3] == 0x04 {
+		return false
+	}
+
+	// reject script injection near the start of the file
+	dangerousPatterns := []string{
+		"<?php", "<?=", "<script", "<%", "#!/",
+	}
+	header := strings.ToLower(string(buf))
+	for _, pattern := range dangerousPatterns {
+		if strings.Contains(header, pattern) {
+			return false
+		}
+	}
+
+	// reject suspiciously high null-byte density right after the header
 	nullCount := 0
 	for _, b := range buf[8:] {
 		if b == 0x00 {
 			nullCount++
 		}
 	}
-	// allow some nulls (binary formats have them) but not suspiciously many in the header
 	if nullCount > 128 {
 		return false
 	}
 
 	return true
 }
+
+
+
 
 //error function
 func ShowError(err error) string {

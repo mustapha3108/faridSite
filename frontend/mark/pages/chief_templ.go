@@ -37,15 +37,7 @@ func Chief() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-screen flex justify-center items-center\"><div class=\"\"><form hx-post=\"/login\" hx-target=\"#loginRes\" class=\"fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4\"><legend class=\"fieldset-legend\">Login</legend> <label class=\"label\">name</label> <input type=\"text\" class=\"input\" name=\"userName\" placeholder=\"name\"> <label class=\"label\">Password</label> <input type=\"password\" class=\"input\" name=\"Password\" placeholder=\"Password\"> <button class=\"btn btn-neutral mt-4\">Login</button></form><div id=\"loginRes\"></div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = comp.CreateUser().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"h-screen flex justify-center items-center\"><div class=\"\"><form hx-post=\"/login\" hx-target=\"#loginRes\" class=\"fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4\"><legend class=\"fieldset-legend\">Login</legend> <label class=\"label\">name</label> <input type=\"text\" class=\"input\" name=\"userName\" placeholder=\"name\"> <label class=\"label\">Password</label> <input type=\"password\" class=\"input\" name=\"Password\" placeholder=\"Password\"> <button class=\"btn btn-neutral mt-4\">Login</button></form><div id=\"loginRes\"></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

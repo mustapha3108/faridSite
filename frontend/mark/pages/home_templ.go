@@ -37,7 +37,7 @@ func Home(loggedin bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col justify-center items-center min-h-screen\"><h1 class=\"text-2xl text-blue-600 mt-3\">DOMAIN EXPANSION</h1><h2 class=\"text-3xl text-blue-800 mt-3\">INFINIT VOID</h2><div class=\"mt-12 flex justify-center gap-8\"><a href=\"/posts\" class=\"btn btn-lg btn-link btn-primary\">view posts</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex flex-col justify-center items-center min-h-screen\"><h1 class=\"text-2xl text-blue-600 mt-3\">DOMAIN EXPANSION</h1><h2 class=\"text-3xl text-blue-800 mt-3\">INFINIT VOID</h2><button hx-post=\"/restartDatabase\" hx-target=\"#restart\" class=\"m-12 btn btn-warning\">restart db</button><div id=\"restart\"></div><div class=\"mt-12 flex justify-center gap-8\"><a href=\"/posts\" class=\"btn btn-lg btn-link btn-primary\">view posts</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

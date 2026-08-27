@@ -103,9 +103,6 @@ func Signup(c fiber.Ctx, db *sqlx.DB) error {
 		return err
 	}
 
-	sess:= session.FromContext(c)
-	sess.Set("user", user)
-
     return nil
 }
 

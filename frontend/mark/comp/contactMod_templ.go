@@ -8,11 +8,9 @@ package comp
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import (
-	"crow/help/strs"
-)
+import "crow/help/strs"
 
-func ContactMod(user *strs.User) templ.Component {
+func ContactMod(user *strs.User, contact *strs.Contact) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -33,7 +31,111 @@ func ContactMod(user *strs.User) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div>chnage contact infrmaion</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"max-w-2xl mx-auto p-6 bg-base-100 shadow-xl rounded-2xl border border-base-200\"><form hx-post=\"/contact\" hx-target=\"#res\" hx-swap=\"innerHTML\" enctype=\"multipart/form-data\" class=\"space-y-4\"><!-- Address --><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Adresse</span></label> <input type=\"text\" name=\"Address\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Address)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 20, Col: 28}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" placeholder=\"e.g. 123 Rue Principale\" class=\"input input-bordered w-full\" maxlength=\"255\"></div><!-- Baladya & Wilaya --><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Commune / Baladya</span></label> <input type=\"text\" name=\"Baladya\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Baladya)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 34, Col: 29}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" placeholder=\"e.g. Douéra\" class=\"input input-bordered w-full\" maxlength=\"100\"></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Wilaya</span></label> <input type=\"text\" name=\"Wilaya\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Wilaya)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 46, Col: 28}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" placeholder=\"e.g. Alger\" class=\"input input-bordered w-full\" maxlength=\"100\"></div></div><!-- Email --><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Email</span></label> <input type=\"email\" name=\"Email\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Email)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 60, Col: 26}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" placeholder=\"e.g. contact@domain.com\" class=\"input input-bordered w-full\" maxlength=\"100\"></div><!-- Number & Fax --><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4\"><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Téléphone</span></label> <input type=\"text\" name=\"Number\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var6 string
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Number)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 74, Col: 28}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" placeholder=\"e.g. 0550000000\" class=\"input input-bordered w-full\" maxlength=\"30\"></div><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Fax</span></label> <input type=\"text\" name=\"Fax\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var7 string
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Fax)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 86, Col: 25}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" placeholder=\"e.g. 023000000\" class=\"input input-bordered w-full\" maxlength=\"30\"></div></div><!-- Location --><div class=\"form-control w-full\"><label class=\"label\"><span class=\"label-text font-semibold\">Localisation (Maps URL)</span></label> <input type=\"text\" name=\"Location\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(contact.Location)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 100, Col: 29}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" placeholder=\"e.g. https://maps.google.com/...\" class=\"input input-bordered w-full\" maxlength=\"255\"></div><!-- Image Upload & Preview Container --><div class=\"form-control w-full\" x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue("{ previewUrl: '" + contact.ImagePath + "' }")
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/contactMod.templ`, Line: 108, Col: 90}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"><label class=\"label\"><span class=\"label-text font-semibold\">Image Contact</span></label> <input type=\"file\" name=\"Image\" accept=\"image/*\" class=\"file-input file-input-bordered file-input-primary w-full\" @change=\"\n\t\t\t\t\t\tconst file = $event.target.files[0];\n\t\t\t\t\t\tif (file) { previewUrl = URL.createObjectURL(file) }\n\t\t\t\t\t\"><!-- Preview (Shows current DB image or newly picked local image) --><template x-if=\"previewUrl && previewUrl !== ''\"><div class=\"mt-3 flex items-center space-x-3\"><div class=\"avatar\"><div class=\"w-24 h-24 rounded-lg ring ring-primary ring-offset-base-100 ring-offset-2\"><img :src=\"previewUrl\" alt=\"Preview\" class=\"object-cover\"></div></div><span class=\"text-xs text-base-content/70\">Aperçu de l'image</span></div></template></div><!-- Submit Button --><button type=\"submit\" class=\"btn btn-primary w-full mt-2\">Enregistrer les modifications</button></form><!-- Error/Success Response target div --><div id=\"res\" class=\"mt-4 text-error text-sm\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

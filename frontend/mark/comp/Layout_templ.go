@@ -29,7 +29,7 @@ func Layout(comp templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Document</title><link rel=\"stylesheet\" href=\"app.css\"><script defer src=\"app.js\"></script></head><body class=\"min-h-screen\" hx-boost=\"true\" hx-target=\"#content\" data-theme=\"abyss\"><div x-data=\"{loading: false}\" class=\"progress-bar\" :class=\"{'active': loading}\" x-on:htmx:before-request.window=\"loading = false; $nextTick(() => loading = true)\" x-on:htmx:after-swap.window=\"loading=false\"></div><div id=\"content\" class=\"\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Document</title><link rel=\"stylesheet\" href=\"app.css\"><script defer src=\"app.js\"></script></head><body class=\"min-h-screen\" hx-boost=\"true\" hx-target=\"#content\" data-theme=\"lofi\"><div x-data=\"{loading: false}\" class=\"progress-bar\" :class=\"{'active': loading}\" x-on:htmx:before-request.window=\"loading = false; $nextTick(() => loading = true)\" x-on:htmx:after-swap.window=\"loading=false\"></div><div id=\"content\" class=\"\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

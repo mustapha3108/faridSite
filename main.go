@@ -19,8 +19,7 @@ func main() {
 
 
 	//TODO:=CREATE DEV INTERFACE FOR RESET PASSWORDs (dev and farid), CREATE FORMS FOR EVERYTHING
-	//projects, jobAppilcations, software, cannot
-	//
+	//rest of forms, dev interface, upload old paths + new images,if old path not in new path delete oldpath image 
 
 	godotenv.Load()
 
@@ -62,7 +61,14 @@ func main() {
 
 	//contact
 	app.Get("/contact", func(c fiber.Ctx) error {
-		return help.Hrender(c, pages.Contact())
+		contact := new(strs.Contact)
+
+		// Use db.Get instead of db.Exec to query a single struct row
+		err := db.Get(contact, `SELECT address, baladya, wilaya, email, number, fax, location, image FROM contact LIMIT 1`)
+		if err != nil {
+		    return c.SendString(help.ShowError(err))
+		}
+		return help.Hrender(c, pages.Contact(contact))
 	})
 
 	//rating
@@ -93,19 +99,40 @@ func main() {
 		target := c.FormValue("target")
 		switch target {
 		case "Contact":
-			return help.Render(c, comp.ContactMod(user))
+			contact := new(strs.Contact)
+			err := db.Get(contact, `SELECT address, baladya, wilaya, email, number, fax, location, image FROM contact LIMIT 1`)
+			if err != nil{
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.ContactMod(user, contact))
 		case "Candidats":
 			return help.Render(c, comp.CandidatsMod(user))
 		case "Atelier":
 			return help.Render(c, comp.AtelierMod(user))
 		case "Comptes":
-			return help.Render(c, comp.ComptesMod(user))
+			var users []strs.User
+			err := db.SelectContext(c, &users, "SELECT * FROM users ORDER BY userID DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.ComptesMod(user, users))
 		case "Projets":
 			return help.Render(c, comp.ProjetsMod(user))
 		case "Stars":
 			return help.Render(c, comp.StarsMod(user))
 		case "Messages":
-			return help.Render(c, comp.MessagesMod(user))
+			var messages []strs.Message
+			err := db.SelectContext(c, &messages, "SELECT * FROM messages ORDER BY messageID DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			var notSeen []strs.MessNot
+			err = db.SelectContext(c, &notSeen, "SELECT * FROM messNot ORDER BY messageID DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+
+			return help.Render(c, comp.MessagesMod(user, messages, notSeen))
 		case "Logout":
 			if err:=help.Logout(c); err!=nil{
 				return c.SendString(help.ShowError(err))
@@ -118,41 +145,52 @@ func main() {
 
 	//contact
 	app.Post("/contact", help.Authmid, func(c fiber.Ctx) error {
-		user:=c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "f"){
-			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
-		}
-		contact := new(strs.Contact)
-		if err:=c.Bind().Form(contact); err!=nil {
-			return c.SendString(help.ShowError(err))
-		}
-		if err:= help.Validate.Struct(contact); err!=nil {
-			return c.SendString(help.ShowError(err))
-		} 
-		var exists bool
-		err := db.Get(&exists, `SELECT EXISTS(SELECT 1 FROM contact)`)
-		if err != nil {
-		    return c.SendString(help.ShowError(err))
-		}
-		if exists {
-			_, err = db.Exec(
-			    `UPDATE contact SET address = ?, baladya = ?, wilaya = ?, email = ?, number = ?, location = ?`,
-			    contact.Address, contact.Baladya, contact.Wilaya, contact.Email, contact.Number, contact.Location,
-			)
-			if err != nil {
-			    return c.SendString(help.ShowError(err))
-			}
-		}else{
-			_, err := db.Exec(
-			    `INSERT INTO contact (address, baladya, wilaya, email, number, location) VALUES (?, ?, ?, ?, ?, ?)`,
-			    contact.Address, contact.Baladya, contact.Wilaya, contact.Email, contact.Number, contact.Location,
-			)
-			if err != nil {
-			    return c.SendString(help.ShowError(err))
-			}
-		}
-		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+	    user := c.Locals("user").(*strs.User)
+	    if !strings.Contains(user.Access, "f") {
+	        return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+	    }
+
+	    contact := new(strs.Contact)
+	    if err := c.Bind().Form(contact); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    if err := help.Validate.Struct(contact); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+
+	    var oldpath string
+	    var hasNewImage bool
+
+	    if contact.Image != nil {
+	        err := db.Get(&oldpath, `SELECT image FROM contact LIMIT 1`)
+	        if err != nil  {
+	            return c.SendString(help.ShowError(err))
+	        }
+
+	        path, err := help.SaveImage(c, contact.Image)
+	        if err != nil {
+	            return c.SendString(help.ShowError(err))
+	        }
+	        contact.ImagePath = path
+	        hasNewImage = true
+	    }
+
+	    _, err := db.Exec(
+	        `UPDATE contact SET address = ?, baladya = ?, wilaya = ?, email = ?, number = ?, fax = ?, location = ?, image = ?`,
+	        contact.Address, contact.Baladya, contact.Wilaya, contact.Email, contact.Number, contact.Fax, contact.Location, contact.ImagePath,
+	    )
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+
+	    if hasNewImage && oldpath != "" {
+	        if err2 := help.DeleteImage(oldpath); err2 != nil {
+	            return c.SendString(help.ShowError(err2))
+	        }
+	    }
+
+	    c.Set("HX-Trigger", "success")
+	    return c.SendString("")
 	})
 
 	//messages
@@ -177,7 +215,7 @@ func main() {
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/deleteMessage", help.Authmid, func (c fiber.Ctx) error {
@@ -187,13 +225,13 @@ func main() {
 		}
 
 		messageID:= c.FormValue("messageID")
-		_,err:= db.Exec(`DELETE FROM messages WHERE id = ?`, messageID)
+		_,err:= db.Exec(`DELETE FROM messages WHERE messageID = ?`, messageID)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/viewMessage", help.Authmid, func (c fiber.Ctx) error  {
@@ -203,13 +241,13 @@ func main() {
 		}
 
 		notId:= c.FormValue("notId")
-		_,err:= db.Exec(`DELETE FROM messNot WHERE id = ?`, notId)
+		_,err:= db.Exec(`DELETE FROM messNot WHERE messNotId = ?`, notId)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//users
@@ -223,33 +261,97 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
+//
+	//app.Post("/updateUser", help.Authmid, func(c fiber.Ctx) error {
+	//	user:= c.Locals("user").(*strs.User)
+	//	if !strings.Contains(user.Access, "f"){
+	//		return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+	//	}
+	//	nUser:=new(strs.User)
+	//	if err:=c.Bind().Form(nUser); err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	}
+	//	if err:= help.Validate.Struct(nUser); err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	} 
+	//	if bytes, err := bcrypt.GenerateFromPassword([]byte(nUser.Password), 12); err!= nil{
+	//		return c.SendString(help.ShowError(err))
+	//	} else {
+	//		nUser.Password = string(bytes)
+	//	}
+	//	_,err := db.Exec(`UPDATE users SET userName = ?, password = ?, access=? WHERE userId = ?`, nUser.UserName, nUser.Password, nUser.Access, nUser.UserId)
+	//	if err!=nil{
+	//		return c.SendString(help.ShowError(err))
+	//	}
+	//	c.Set("HX-Trigger", "success")
+	//	return c.SendString("")
+	//	
+	//})
 
+	// 1. Update Username and Access Rights
 	app.Post("/updateUser", help.Authmid, func(c fiber.Ctx) error {
-		user:= c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "f"){
-			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
-		}
-		nUser:=new(strs.User)
-		if err:=c.Bind().Form(nUser); err!=nil {
-			return c.SendString(help.ShowError(err))
-		}
-		if err:= help.Validate.Struct(nUser); err!=nil {
-			return c.SendString(help.ShowError(err))
-		} 
-		if bytes, err := bcrypt.GenerateFromPassword([]byte(nUser.Password), 12); err!= nil{
-			return c.SendString(help.ShowError(err))
-		} else {
-			nUser.Password = string(bytes)
-		}
-		_,err := db.Exec(`UPDATE users SET userName = ?, password = ? WHERE userId = ?`, nUser.UserName, nUser.Password, nUser.UserId)
-		if err!=nil{
-			return c.SendString(help.ShowError(err))
-		}
-		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
-		
+	    user := c.Locals("user").(*strs.User)
+	    if !strings.Contains(user.Access, "f") {
+	        return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+	    }
+	
+	    type UpdateUserReq struct {
+	        UserId   int    `form:"UserId" validate:"required"`
+	        UserName string `form:"UserName" validate:"required,min=3,max=50"`
+	        Access   string `form:"Access" validate:"max=4"`
+	    }
+	
+	    req := new(UpdateUserReq)
+	    if err := c.Bind().Form(req); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    if err := help.Validate.Struct(req); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	
+	    _, err := db.Exec(`UPDATE users SET userName = ?, access = ? WHERE userId = ?`, req.UserName, req.Access, req.UserId)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	
+	    c.Set("HX-Trigger", "success")
+	    return c.SendString("")
+	})
+	
+	// 2. Update Password Only
+	app.Post("/updateUserPassword", help.Authmid, func(c fiber.Ctx) error {
+	    user := c.Locals("user").(*strs.User)
+	    if !strings.Contains(user.Access, "f") {
+	        return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+	    }
+	
+	    type UpdatePasswordReq struct {
+	        UserId   int    `form:"UserId" validate:"required"`
+	        Password string `form:"Password" validate:"required,min=6,max=12"`
+	    }
+	
+	    req := new(UpdatePasswordReq)
+	    if err := c.Bind().Form(req); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    if err := help.Validate.Struct(req); err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	
+	    bytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	
+	    _, err = db.Exec(`UPDATE users SET password = ? WHERE userId = ?`, string(bytes), req.UserId)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	
+	    c.Set("HX-Trigger", "success")
+	    return c.SendString("")
 	})
 
 	app.Post("/deleteUser", help.Authmid, func (c fiber.Ctx) error {
@@ -262,12 +364,12 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/reset", help.Authmid, func (c fiber.Ctx) error {
 		user:= c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "sss"){
+		if user.Access != "sss" {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
 		password:= c.FormValue("password")
@@ -280,7 +382,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//categories
@@ -310,7 +412,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/deleteCategory", help.Authmid, func (c fiber.Ctx) error {
@@ -324,7 +426,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/updateCategory", help.Authmid, func (c fiber.Ctx) error {
@@ -357,7 +459,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//partnairs
@@ -386,7 +488,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/deletePartenair", help.Authmid, func (c fiber.Ctx) error {
@@ -404,7 +506,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//ratings
@@ -423,7 +525,7 @@ func main() {
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/deleteRate", help.Authmid, func (c fiber.Ctx) error {
@@ -437,7 +539,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//members
@@ -471,7 +573,7 @@ func main() {
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/updateMember", help.Authmid, func (c fiber.Ctx) error {
@@ -509,7 +611,7 @@ func main() {
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	app.Post("/deleteMember", help.Authmid, func (c fiber.Ctx) error {
@@ -530,7 +632,7 @@ func main() {
 		}
 
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//job applications
@@ -544,8 +646,24 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		} 
 
-		res,err := db.Exec(`INSERT INTO jobAppilcations (firstName, lastName, email, object, message, software) VALUES (?,?,?,?,?,?)`,
-						apply.FirstName, apply.LastName, apply.Email, apply.Object, apply.Message, apply.software)
+		//pdf
+		cvPath, err:= help.SavePDF(c, apply.Cv)
+		if err !=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		letterPath, err := help.SavePDF(c, apply.Letter)
+		if err !=nil {
+			if err2:= help.DeletePDF(cvPath); err2!=nil {
+				return c.SendString(help.ShowError(err2))
+			}
+			return c.SendString(help.ShowError(err))
+		}
+		
+		apply.CvPath = cvPath
+		apply.LetterPath = letterPath
+
+		res,err := db.Exec(`INSERT INTO jobAppilcations (firstName, lastName, email, object, message, software, cv, letter) VALUES (?,?,?,?,?,?,?,?)`,
+						apply.FirstName, apply.LastName, apply.Email, apply.Object, apply.Message, apply.Software, apply.CvPath,apply.LetterPath)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		} else {
@@ -559,34 +677,109 @@ func main() {
 			}
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
-	app.Post("/dlApp", help.Authmid, func (c fiber.Ctx) error {
+	app.Post("/deleteApply", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
 		if !strings.Contains(user.Access, "f"){
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
-		//logic for later
+		id:= c.FormValue("applyid")
+		cv:= c.FormValue("cv")
+		letter:=c.FormValue("letter")
+		if _,err := db.Exec(`DELETE FROM jobAppilcations WHERE apId = ?`, id); err!=nil{
+			return c.SendString(help.ShowError(err))
+		}
+		if err:= help.DeletePDF(cv); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+
+		if err:= help.DeletePDF(letter); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
-	app.Post("/viewAp", help.Authmid, func (c fiber.Ctx) error {
+	app.Post("/viewApply", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
 		if !strings.Contains(user.Access, "f"){
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
-		//logic for later
+		id:= c.FormValue("notifId")
+		if _,err := db.Exec(`DELETE FROM canNot WHERE canNotId = ?`, id); err!=nil{
+			return c.SendString(help.ShowError(err))
+		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 	//add software
+	app.Post("/addSoftware", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
 
-	
-	
+		software:= new(strs.Software)
+		if err:=c.Bind().Form(software); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		if err:= help.Validate.Struct(software); err!=nil {
+			return c.SendString(help.ShowError(err))
+		} 
 
+		_,err := db.Exec(`INSERT INTO software(siftwareName, required) VALUES (?,?)`,
+						software.SoftwareName, software.Required)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+
+
+	app.Post("/updateSoftware", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
+
+		software:= new(strs.Software)
+		if err:=c.Bind().Form(software); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		if err:= help.Validate.Struct(software); err!=nil {
+			return c.SendString(help.ShowError(err))
+		} 
+
+		_,err := db.Exec(`UPDATE software SET softwareName=?, required=? WHERE SoftwareId = ?`,
+						software.SoftwareName, software.Required, software.SoftwareId)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+
+	app.Post("/deleteSoftware", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
+		id:= c.FormValue("softwareid")
+		if _,err := db.Exec(`DELETE FROM software WHERE softwareId = ?`, id); err!=nil{
+			return c.SendString(help.ShowError(err))
+		}
+
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+	
 	//upload project
 	app.Post("/uploadProject", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
@@ -652,9 +845,126 @@ func main() {
 		    return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
-		return c.SendStatus(200)
+		return c.SendString("")
 
 	})
+
+	app.Post("/updateProject", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "m"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
+		
+		//logic here
+		project := new(strs.ProjectMod)
+		if err:=c.Bind().Form(project); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		if err:= help.Validate.Struct(project); err!=nil {
+			return c.SendString(help.ShowError(err))
+		} 
+
+		oldProject:= new(strs.Project)
+		err:= db.Get(oldProject, `SELECT * FROM projects WHERE projectId = ?`, project.ProjectId)
+		if err !=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		var toDelete []string
+		//main image
+		if project.MImage != nil {
+			toDelete = append(toDelete, oldProject.MImagePath)
+			project.MImagePath, err = help.SaveImage(c, project.MImage)
+			if err !=nil {
+				return c.SendString(help.ShowError(err))
+			}
+		}
+		//images
+		oldPaths:= strings.Split(oldProject.ImagePaths, ";")
+		newPaths:= strings.Split(project.ImagePaths, ";")
+		
+		for _,v := range oldPaths {
+			found:=false
+			for _,v2:=range newPaths {
+				if v == v2{
+					found = true
+					break
+				}
+			}
+			if found==false {
+				toDelete = append(toDelete, v)
+			}
+		}
+		var comPaths []string
+		comPaths = append(comPaths, project.MImagePath)
+		for _, image := range project.Images {
+			path, err := help.SaveImage(c, image)
+			comPaths = append(comPaths, path)
+			if err!= nil {
+				if err:= help.DeleteImage(project.MImagePath); err!=nil {
+					return c.SendString(help.ShowError(err))
+				}
+				project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
+				toDelete := strings.Split(project.ImagePaths, ";")
+				for _, v := range toDelete {
+					if err :=help.DeleteImage(v); err!= nil {
+						return c.SendString(help.ShowError(err))
+					}
+				}
+				return c.SendString(help.ShowError(err))
+			}
+			project.ImagePaths = project.ImagePaths + path + ";"
+		}
+		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
+		
+		_, err = db.Exec(`UPDATE projects SET userId = ?,categoryId = ?,projectName = ?,description = ?,imagePaths = ?,mImagePath = ? WHERE projectId = ?`,
+						project.UserId,project.CategoryId,project.ProjectName,project.Description,project.ImagePaths,project.MImagePath,project.ProjectId)
+		if err != nil {
+			for _,v:= range comPaths {
+				if err2:= help.DeleteImage(v); err2!=nil {
+					return c.SendString(help.ShowError(err2))
+				}
+			}
+			return c.SendString(help.ShowError(err))
+		}else {
+			for _,v:=range toDelete {
+				if err2:= help.DeleteImage(v); err2!=nil {
+					return c.SendString(help.ShowError(err2))
+				}
+			}
+		}
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+
+	app.Post("/deleteProject", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "d"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
+
+		id:= c.FormValue("projectId")
+		mPath:=c.FormValue("mPath")
+		paths:=strings.Split(c.FormValue("paths"), ";" )
+
+		_,err:= db.Exec(`DELETE FROM projects WHERE id=?`, id)
+		if err!=nil{
+			return c.SendString(help.ShowError(err))
+		}
+		err = help.DeleteImage(mPath)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		for _,v := range paths {
+			err = help.DeleteImage(v)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+		}
+		
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+
 
 	app.Post("/updateNotif", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
@@ -662,18 +972,18 @@ func main() {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
 
-		var messages int = -1
+		var messages int = 0
 		if err := db.Get(&messages, `SELECT COUNT(*) FROM messNot`); err!=nil {
 			return c.SendStatus(500)
 		}
-		var candidats int = -1
+		var candidats int = 0
 		if err := db.Get(&candidats, `SELECT COUNT(*) FROM canNot`); err!=nil {
 			return c.SendStatus(500)
 		}
 
 		trigger := fmt.Sprintf(`{"notif": {"messages": %d, "candidats": %d}}`, messages, candidats)
 		c.Set("HX-Trigger", trigger)
-		return c.SendStatus(200)
+		return c.SendString("")
 	})
 
 

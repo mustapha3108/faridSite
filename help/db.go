@@ -5,6 +5,7 @@ import (
 	"os"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
+	"fmt"
 )
 
 // database
@@ -22,6 +23,7 @@ func BasicDb() *sqlx.DB {
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
 		log.Fatal("error enabling foreign keys:", err)
 	}
+
 
 	tables := []string{
 		//fcmd
@@ -60,12 +62,15 @@ func BasicDb() *sqlx.DB {
 			memberImagePath 	TEXT NOT NULL
 		)`,
 		`CREATE TABLE IF NOT EXISTS contact(
+			contactId INTEGER PRIMARY KEY AUTOINCREMENT,
 			address  TEXT,
 			baladya  TEXT,
 			wilaya   TEXT,
 			email    TEXT,
 			number   TEXT,
-			location TEXT
+			fax      TEXT,
+			location TEXT,
+			image    TEXT
 		)`,
 		`CREATE TABLE IF NOT EXISTS messages(
 			messageId 	INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +78,7 @@ func BasicDb() *sqlx.DB {
 			lastName    TEXT NOT NULL,
 			email 		TEXT NOT NULL,
 			object 		TEXT NOT NULL,
-			message 	TEXT NOT NULL,
+			message 	TEXT NOT NULL
 		)`,//gotta add some columns here
 		`CREATE TABLE IF NOT EXISTS jobApplications(
 			apId		INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +87,9 @@ func BasicDb() *sqlx.DB {
 			email 		TEXT NOT NULL,
 			object 		TEXT NOT NULL,
 			message 	TEXT NOT NULL,
-			software    TEXT NOT NULL
+			software    TEXT NOT NULL,
+			cv          TEXT NOT NULL,
+			letter      TEXT NOT NULL
 		)`,
 		`CREATE TABLE IF NOT EXISTS partenairs(
 			partenairId   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +102,7 @@ func BasicDb() *sqlx.DB {
 		)`,
 		`CREATE TABLE IF NOT EXISTS canNot(
 			canNotId     INTEGER PRIMARY KEY AUTOINCREMENT,
-			candidatId   INTEGER NOT NULL REFERENCES jobApplication(apId) ON DELETE CASCADE
+			candidatId   INTEGER NOT NULL REFERENCES jobApplications(apId) ON DELETE CASCADE
 		)`,
 		`CREATE TABLE IF NOT EXISTS software(
 			softwareId   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,10 +132,18 @@ func BasicDb() *sqlx.DB {
 		log.Fatal("error creating: 	", err)
 	}
 
-	_,err = db.Exec(`INSERT OR IGNORE INTO users VALUES(?,?,?,?)`, 1, "dev", devPassword, "sss")
+	_,err = db.Exec(`INSERT OR IGNORE INTO users VALUES(?,?,?,?)`, 2, "dev", devPassword, "sss")
 	if err!=nil {
 		log.Fatal("error creating: 	", err)
 	}
+	_, err = db.Exec(
+	    `INSERT OR IGNORE INTO contact VALUES(?,?,?,?,?,?,?,?,?)`, 
+	    1, "address", "baladya", "wilaya", "email", "number", "fax", "location", "",
+	)
+	if err != nil {
+	    log.Fatal("error creating contact: ", err)
+	}
+	
 	
 
 	return db
@@ -137,10 +152,25 @@ func BasicDb() *sqlx.DB {
 
 //delete database
 func DeleteTable(db *sqlx.DB) {
-	tables := []string{"users", "categories", "projects", "ratings", "members", "contact", "messages", "jobApplications", "partenairs", "messNot", "canNot"}
-	for _,v := range(tables) {
-		if _, err:= db.Exec(`DROP TABLE ?`, v); err!=nil {
-			log.Fatal("error creating: 	", err)
+	tables := []string{
+		"users", "categories", "projects", "ratings",
+		"members", "contact", "messages", "jobApplications",
+		"partenairs", "messNot", "canNot","software",
+	}
+
+	// 1. Delete all rows from each table first
+	for _, v := range tables {
+		deleteQuery := fmt.Sprintf("DELETE FROM %s", v)
+		if _, err := db.Exec(deleteQuery); err != nil {
+			log.Printf("Warning: failed to clear rows from %s: %v", v, err)
+		}
+	}
+
+	// 2. Drop the tables
+	for _, v := range tables {
+		dropQuery := fmt.Sprintf("DROP TABLE IF EXISTS %s", v)
+		if _, err := db.Exec(dropQuery); err != nil {
+			log.Fatalf("Error dropping table %s: %v", v, err)
 		}
 	}
 }

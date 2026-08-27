@@ -2,8 +2,154 @@ package comp
 
 import (
     "crow/help/strs"
+    "fmt"
 )
 
-templ MessagesMod(user *strs.User){
-    <div>view and crud messages</div>
+func isSeen(msgId int, notSeen []strs.MessNot) (bool, int) {
+    for _, n := range notSeen {
+        if n.MessageId == msgId {
+            return false, n.MessNotId
+        }
+    }
+    return true, 0
+}
+
+templ MessagesMod(user *strs.User, messages []strs.Message, notSeen []strs.MessNot) {
+    <div class="w-full max-w-4xl mx-auto space-y-2 p-4">
+        for i, msg := range messages {
+            {{ seen, notId := isSeen(msg.MessageId, notSeen) }}
+            if seen {
+                @SeenAccordion(msg, i == 0)
+            } else {
+                @NotifAccordion(msg, notId, i == 0)
+            }
+        }
+    </div>
+}
+
+// Unread Message (Primary Color Border)
+templ NotifAccordion(msg strs.Message, notId int, isFirst bool) {
+    <div x-data="{ isRead: false }" class="collapse bg-base-100 border-2" :class="isRead ? 'border-base-300' : 'border-primary'">
+        if isFirst {
+            <input type="radio" name="my-accordion-1" checked="checked" />
+        } else {
+            <input type="radio" name="my-accordion-1" />
+        }
+        
+        <div class="collapse-title font-semibold flex items-center justify-between pr-8" :class="isRead ? '' : 'text-primary'">
+            <div class="flex items-center gap-2">
+                <span x-show="!isRead" class="badge badge-primary badge-sm">Nouveau</span>
+                <span x-show="isRead" x-cloak class="badge badge-ghost badge-sm">Lu</span>
+                <span class="text-base-content">{ msg.FirstName } { msg.LastName }</span>
+                <span class="text-xs text-base-content/60 font-normal">({ msg.Email })</span>
+            </div>
+            <span class="text-sm font-normal text-base-content/80 truncate max-w-xs">{ msg.Object }</span>
+        </div>
+
+        <div class="collapse-content text-sm space-y-4">
+            <div class="pt-2 border-t border-base-200">
+                <p class="font-semibold mb-1">Objet: { msg.Object }</p>
+                <p class="whitespace-pre-wrap leading-relaxed text-base-content/90">{ msg.Message }</p>
+            </div>
+
+            <div class="flex justify-end items-center gap-2 pt-2">
+                <!-- Clear Notification Button -->
+                <button
+                    x-show="!isRead"
+                    hx-post="/viewMessage"
+                    hx-vals={ fmt.Sprintf(`{"notId": "%d"}`, notId) }
+                    hx-target="this"
+                    hx-target-error="#res"
+                    hx-swap="none"
+                    @click="isRead = true"
+                    class="btn btn-secondary btn-sm"
+                >
+                    Effacer la notification
+                </button>
+
+                <!-- Two-Stage Delete Message Button -->
+                <div x-data="{ confirm: false }">
+                    <button
+                        type="button"
+                        x-show="!confirm"
+                        @click="confirm = true"
+                        class="btn btn-error btn-sm"
+                    >
+                        Supprimer le message
+                    </button>
+
+                    <button
+                        type="button"
+                        x-show="confirm"
+                        x-cloak
+                        @click="confirm = false"
+                        hx-post="/deleteMessage"
+                        hx-vals={ fmt.Sprintf(`{"messageID": "%d"}`, msg.MessageId) }
+                        hx-target="closest .collapse"
+                        hx-target-error="#res"
+                        hx-swap="delete"
+                        class="btn btn-accent btn-sm animate-pulse font-bold"
+                    >
+                        Confirmer la suppression ?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+// Read Message (Standard Border)
+templ SeenAccordion(msg strs.Message, isFirst bool) {
+    <div class="collapse bg-base-100 border border-base-300">
+        if isFirst {
+            <input type="radio" name="my-accordion-1" checked="checked" />
+        } else {
+            <input type="radio" name="my-accordion-1" />
+        }
+        
+        <div class="collapse-title font-semibold flex items-center justify-between pr-8">
+            <div class="flex items-center gap-2">
+                <span class="badge badge-ghost badge-sm">Lu</span>
+                <span>{ msg.FirstName } { msg.LastName }</span>
+                <span class="text-xs text-base-content/60 font-normal">({ msg.Email })</span>
+            </div>
+            <span class="text-sm font-normal text-base-content/80 truncate max-w-xs">{ msg.Object }</span>
+        </div>
+
+        <div class="collapse-content text-sm space-y-4">
+            <div class="pt-2 border-t border-base-200">
+                <p class="font-semibold mb-1">Objet: { msg.Object }</p>
+                <p class="whitespace-pre-wrap leading-relaxed text-base-content/80">{ msg.Message }</p>
+            </div>
+
+            <div class="flex justify-end items-center gap-2 pt-2">
+                <!-- Two-Stage Delete Message Button -->
+                <div x-data="{ confirm: false }">
+                    <button
+                        type="button"
+                        x-show="!confirm"
+                        @click="confirm = true"
+                        class="btn btn-error btn-outline btn-sm"
+                    >
+                        Supprimer le message
+                    </button>
+
+                    <button
+                        type="button"
+                        x-show="confirm"
+                        x-cloak
+                        @click="confirm = false"
+                        hx-post="/deleteMessage"
+                        hx-vals={ fmt.Sprintf(`{"messageID": "%d"}`, msg.MessageId) }
+                        hx-target="closest .collapse"
+                        hx-target-error="#res"
+                        hx-swap="delete"
+                        class="btn btn-accent btn-sm animate-pulse font-bold"
+                    >
+                        Confirmer la suppression ?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 }

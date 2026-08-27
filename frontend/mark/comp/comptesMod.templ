@@ -2,8 +2,36 @@ package comp
 
 import (
     "crow/help/strs"
+    "crow/frontend/mark/comp/forms"
 )
 
-templ ComptesMod(user *strs.User){
-    <div>crud user accounts</div>
+templ ComptesMod(user *strs.User, users []strs.User) {
+    <div class="w-full max-w-4xl mx-auto self-start min-h-screen">
+        <div class="tabs tabs-border w-full">
+
+            <input
+                type="radio"
+                name="my_tabs_2"
+                class="tab"
+                aria-label="Créer un utilisateur"
+            />
+
+            <div class="tab-content border-base-300 bg-base-100 p-6 md:p-10">
+                @forms.CreateUserForm()
+            </div>
+
+            <input
+                type="radio"
+                name="my_tabs_2"
+                class="tab"
+                aria-label="Utilisateurs"
+                checked="checked"
+            />
+
+            <div class="tab-content border-base-300 bg-base-100 p-6 md:p-10">
+                @forms.Users(users)
+            </div>
+
+        </div>
+    </div>
 }

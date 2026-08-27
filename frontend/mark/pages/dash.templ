@@ -1,113 +1,323 @@
 package pages
 
 import (
-    "crow/help/strs"
-    "strings"
+"crow/help/strs"
+"strings"
 )
 
 templ Dash(user *strs.User) {
-    <!-- Added x-data state, window event listener for HTMX trigger, and HTMX 5s polling -->
-    <div class="drawer lg:drawer-open" 
-        if strings.Contains(user.Access, "f"){
-          x-data="{ messages: 0, candidats: 0 }"
-          x-on:notif.window="messages = $event.detail.messages; candidats = $event.detail.candidats"
-          hx-post="/updateNotif" 
-          hx-trigger="load, every 30s"
-          hx-swap="none"
-        }
-         >
-      <input id="my-drawer-4" type="checkbox" class="drawer-toggle inline" />
-      <div class="drawer-content">
-        <!-- Navbar -->
+<div
+    class="drawer lg:drawer-open"
+    if strings.Contains(user.Access, "f") {
+        x-data="{ messages: 0, candidats: 0 }"
+        x-on:notif.window="messages = $event.detail.messages; candidats = $event.detail.candidats"
+        hx-post="/updateNotif"
+        hx-trigger="load, every 5s"
+        hx-swap="none"
+    }
+>
+
+    <input id="my-drawer-4" type="checkbox" class="drawer-toggle inline" />
+
+    <div class="drawer-content">
+
         <nav class="navbar w-full bg-base-300">
-          <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost drawer-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-logs-icon lucide-logs"><path d="M3 5h1"/><path d="M3 12h1"/><path d="M3 19h1"/><path d="M8 5h1"/><path d="M8 12h1"/><path d="M8 19h1"/><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/></svg>
-          </label>
-          <div class="px-4">{user.UserName} with id {user.UserId}</div>
+            <label
+                for="my-drawer-4"
+                aria-label="open sidebar"
+                class="btn btn-square btn-ghost drawer-button"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M3 5h1"/>
+                    <path d="M3 12h1"/>
+                    <path d="M3 19h1"/>
+                    <path d="M8 5h1"/>
+                    <path d="M8 12h1"/>
+                    <path d="M8 19h1"/>
+                    <path d="M13 5h8"/>
+                    <path d="M13 12h8"/>
+                    <path d="M13 19h8"/>
+                </svg>
+            </label>
+
+            <div class="px-4">
+                {user.UserName} with id {user.UserId}
+            </div>
         </nav>
-        <!-- Page content here -->
-        <div id="dashContent" class="flex justify-center items-center">
-          <h1>welcome back {user.UserName}</h1>
-          <div>
-            <p>nombre de messages: <span x-text="messages"></span></p>
-          </div>
 
-          <div>
-            <p>nombre de candidats: <span x-text="candidats"></span></p>
-          </div>
-        </div>
-      </div>
+        <div
+            id="dashContent"
+            class="flex flex-col justify-center items-center min-h-full"
+        >
+            <h1>welcome back {user.UserName}</h1>
 
-      <div class="drawer-side is-drawer-close:overflow-visible">
-        <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-        <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
-          <ul class="menu w-full grow mt-12">
-            <li>
-              @link("Contact"){
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              }
-            </li>
-
-            <li>
-              @link("Candidats"){
-                <div class="relative flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-user-icon lucide-file-user"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M16 22a4 4 0 0 0-8 0"/><circle cx="12" cy="15" r="3"/></svg>
-                  <span x-show="candidats > 0" x-text="candidats" class="badge badge-error badge-xs ml-1"></span>
+            if strings.Contains(user.Access, "f") {
+                <div>
+                    <p>
+                        nombre de messages:
+                        <span x-text="messages"></span>
+                    </p>
                 </div>
-              }
-            </li>
 
-            <li>
-              @link("Atelier"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
-              }
-            </li>
-
-            <li>
-              @link("Comptes"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-arrow-left-icon lucide-user-round-arrow-left"><path d="m19 16-3 3"/><path d="M2 21a8 8 0 0 1 12.664-6.5"/><path d="M22 19h-6l3 3"/><circle cx="10" cy="8" r="5"/></svg>
-              }
-            </li>
-
-            <li>
-              @link("Projets"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-presentation-icon lucide-presentation"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>
-              }
-            </li>
-
-            <li>
-              @link("Stars"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
-              }
-            </li>
-
-            <li>
-              @link("Messages"){
-                <div class="relative flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-horizontal-icon lucide-send-horizontal"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>
-                  <span x-show="messages > 0" x-text="messages" class="badge badge-error badge-xs ml-1"></span>
+                <div>
+                    <p>
+                        nombre de candidats:
+                        <span x-text="candidats"></span>
+                    </p>
                 </div>
-              }
-            </li>
-
-            <li>
-              @link("Logout"){
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out-icon lucide-log-out"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
-              }
-            </li>
-          </ul>
+            }
         </div>
-      </div>
+
+        <div
+            x-data="{
+                show: false,
+                timer: null,
+                trigger() {
+                    this.show = true;
+                    const resEl = document.getElementById('res');
+                    if (resEl) resEl.innerHTML = '';
+                    if (this.timer) clearTimeout(this.timer);
+                    this.timer = setTimeout(() => {
+                        this.show = false;
+                    }, 1500);
+                }
+            }"
+            x-on:success.window="trigger()"
+            x-show="show"
+            x-cloak
+            x-transition.duration.300ms
+            class="toast toast-bottom toast-end z-50"
+        >
+            <div class="alert alert-success">
+                <span>Opération réussie</span>
+            </div>
+        </div>
+
     </div>
+
+    <div class="drawer-side is-drawer-close:overflow-visible">
+        <label
+            for="my-drawer-4"
+            aria-label="close sidebar"
+            class="drawer-overlay"
+        ></label>
+
+        <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
+
+            <ul class="menu w-full grow mt-12">
+
+                if strings.Contains(user.Access, "f") {
+
+                    <li>
+                        @link("Contact") {
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        }
+                    </li>
+
+                    <li>
+                        @link("Candidats") {
+                            <div class="relative inline-flex items-center justify-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/>
+                                    <path d="M14 2v5a1 1 0 0 0 1 1h5"/>
+                                    <path d="M16 22a4 4 0 0 0-8 0"/>
+                                    <circle cx="12" cy="15" r="3"/>
+                                </svg>
+
+                                <span
+                                    x-show="candidats > 0"
+                                    x-cloak
+                                    x-text="candidats"
+                                    class="badge badge-error badge-xs absolute -top-1.5 -right-2 px-1 text-[10px]"
+                                ></span>
+                            </div>
+                        }
+                    </li>
+
+                    <li>
+                        @link("Atelier") {
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <path d="M16 3.128a4 4 0 0 1 0 7.744"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3.87-3.97"/>
+                                <circle cx="9" cy="7" r="4"/>
+                            </svg>
+                        }
+                    </li>
+
+                    <li>
+                        @link("Comptes") {
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="m19 16-3 3"/>
+                                <path d="M2 21a8 8 0 0 1 12.664-6.5"/>
+                                <path d="M22 19h-6l3 3"/>
+                                <circle cx="10" cy="8" r="5"/>
+                            </svg>
+                        }
+                    </li>
+
+                }
+
+                <!-- Projects are available to everyone -->
+                <li>
+                    @link("Projets") {
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M2 3h20"/>
+                            <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/>
+                            <path d="m7 21 5-5 5 5"/>
+                        </svg>
+                    }
+                </li>
+
+                if strings.Contains(user.Access, "f") {
+
+                    <li>
+                        @link("Stars") {
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>
+                            </svg>
+                        }
+                    </li>
+
+                    <li>
+                        @link("Messages") {
+                            <div class="relative inline-flex items-center justify-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/>
+                                    <path d="M6 12h16"/>
+                                </svg>
+
+                                <span
+                                    x-show="messages > 0"
+                                    x-cloak
+                                    x-text="messages"
+                                    class="badge badge-error badge-xs absolute -top-1.5 -right-2 px-1 text-[10px]"
+                                ></span>
+                            </div>
+                        }
+                    </li>
+
+                }
+
+                <li>
+                    @link("Logout") {
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="m16 17 5-5-5-5"/>
+                            <path d="M21 12H9"/>
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        </svg>
+                    }
+                </li>
+
+            </ul>
+
+        </div>
+    </div>
+
+</div>
+
 }
 
-templ link(target string) {
-    <button hx-post="/dashNav" hx-include="this" hx-target="#dashContent" hx-swap="innerHTML"
-            class="is-drawer-close:tooltip is-drawer-close:tooltip-right my-3"
-            data-tip={target}
-            >
-        <input type="hidden" name="target" value={ target } />
-        {children...}
-        <span class="is-drawer-close:hidden">{target}</span>
-    </button>
+templ link(target string) { <button
+     hx-post="/dashNav"
+     hx-include="this"
+     hx-target="#dashContent"
+     hx-swap="innerHTML"
+     class="is-drawer-close:tooltip is-drawer-close:tooltip-right my-3 flex items-center gap-3"
+     data-tip={target}
+ > <input type="hidden" name="target" value={target} />
+{children...} <span class="is-drawer-close:hidden">{target}</span> </button>
 }
