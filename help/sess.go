@@ -30,7 +30,7 @@ func BasicStart(app *fiber.App){
 	gob.Register(&strs.User{}) 
 
 	storage := sqlite3.New(sqlite3.Config{
-        Database: "./data.db",   // can be the same file as your app DB, or separate
+        Database: "./sessions.db",   // can be the same file as your app DB, or separate
         Table:    "sessions",
         Reset:    false,
     })

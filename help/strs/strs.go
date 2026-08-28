@@ -15,7 +15,7 @@ type Category struct {
 	CategoryId   int                   `db:"categoryId"   form:"CategoryId"`
 	CategoryName string                `db:"categoryName" form:"CategoryName" validate:"required,min=2,max=150"`
 	ImagePath    string                `db:"imagePath"    form:"ImagePath"`
-	Image        *multipart.FileHeader `db:"-"            form:"Image" validate:"required"`
+	Image        *multipart.FileHeader `db:"-"            form:"Image"`
 }
 
 type Project struct {
@@ -55,7 +55,7 @@ type Member struct {
 	MemberTitle       string                `db:"memberTitle"       form:"MemberTitle"       validate:"omitempty,max=100"`
 	MemberDescription string                `db:"memberDescription" form:"MemberDescription" validate:"omitempty,max=2000"`
 	MemberImagePath   string                `db:"memberImagePath"   form:"MemberImagePath"`
-	MemberImage       *multipart.FileHeader `db:"-"                 form:"MemberImage"       validate:"required"`
+	MemberImage       *multipart.FileHeader `db:"-"                 form:"MemberImage"`
 }
 
 type Contact struct {

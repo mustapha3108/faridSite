@@ -108,7 +108,12 @@ func main() {
 		case "Candidats":
 			return help.Render(c, comp.CandidatsMod(user))
 		case "Atelier":
-			return help.Render(c, comp.AtelierMod(user))
+			var members []strs.Member
+			err := db.SelectContext(c, &members, "SELECT * FROM members ORDER BY memberID DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.AtelierMod(user, members))
 		case "Comptes":
 			var users []strs.User
 			err := db.SelectContext(c, &users, "SELECT * FROM users ORDER BY userID DESC")
@@ -139,6 +144,13 @@ func main() {
 			} else {
 				return help.Redirect(c, "/")
 			}
+		case "Categories":
+			var categories []strs.Category
+			err := db.SelectContext(c, &categories, "SELECT * FROM categories")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.CategoriesMod(user, categories))
 		}	
 		return c.SendString("page introuvable")
 	})
@@ -263,34 +275,7 @@ func main() {
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
 	})
-//
-	//app.Post("/updateUser", help.Authmid, func(c fiber.Ctx) error {
-	//	user:= c.Locals("user").(*strs.User)
-	//	if !strings.Contains(user.Access, "f"){
-	//		return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
-	//	}
-	//	nUser:=new(strs.User)
-	//	if err:=c.Bind().Form(nUser); err!=nil {
-	//		return c.SendString(help.ShowError(err))
-	//	}
-	//	if err:= help.Validate.Struct(nUser); err!=nil {
-	//		return c.SendString(help.ShowError(err))
-	//	} 
-	//	if bytes, err := bcrypt.GenerateFromPassword([]byte(nUser.Password), 12); err!= nil{
-	//		return c.SendString(help.ShowError(err))
-	//	} else {
-	//		nUser.Password = string(bytes)
-	//	}
-	//	_,err := db.Exec(`UPDATE users SET userName = ?, password = ?, access=? WHERE userId = ?`, nUser.UserName, nUser.Password, nUser.Access, nUser.UserId)
-	//	if err!=nil{
-	//		return c.SendString(help.ShowError(err))
-	//	}
-	//	c.Set("HX-Trigger", "success")
-	//	return c.SendString("")
-	//	
-	//})
 
-	// 1. Update Username and Access Rights
 	app.Post("/updateUser", help.Authmid, func(c fiber.Ctx) error {
 	    user := c.Locals("user").(*strs.User)
 	    if !strings.Contains(user.Access, "f") {
@@ -416,47 +401,71 @@ func main() {
 	})
 
 	app.Post("/deleteCategory", help.Authmid, func (c fiber.Ctx) error {
-		user:= c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "f"){
+		user := c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f") {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
-		category := c.FormValue("categoryId")
-		_,err := db.Exec("DELETE FROM categories WHERE categoryId = ?", category)
-		if err!=nil {
+		categoryId := c.FormValue("categoryId")
+	
+		var imagePath string
+		if err := db.Get(&imagePath, `SELECT imagePath FROM categories WHERE categoryId = ?`, categoryId); err != nil {
 			return c.SendString(help.ShowError(err))
 		}
+	
+		if _, err := db.Exec(`DELETE FROM categories WHERE categoryId = ?`, categoryId); err != nil {
+			return c.SendString(help.ShowError(err))
+		}
+	
+		if err := help.DeleteImage(imagePath); err != nil {
+			return c.SendString(help.ShowError(err))
+		}
+	
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
 	})
 
 	app.Post("/updateCategory", help.Authmid, func (c fiber.Ctx) error {
-		user:= c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "f"){
+		user := c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f") {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
-		category:=new(strs.Category)
-		if err:=c.Bind().Form(category); err!=nil {
+		category := new(strs.Category)
+		if err := c.Bind().Form(category); err != nil {
 			return c.SendString(help.ShowError(err))
 		}
-		if err:= help.Validate.Struct(category); err!=nil {
+		if err := help.Validate.Struct(category); err != nil {
 			return c.SendString(help.ShowError(err))
-		} 
-		oldPath := category.ImagePath
-		path, err:= help.SaveImage(c, category.Image)
-		if err!=nil{
-			return c.SendString(help.ShowError(err)) 
 		}
-		category.ImagePath = path
-		_, err = db.Exec(`UPDATE categories SET categoryName = ?, imagePath = ? WHERE categoryId = ?`,
-						category.CategoryName, category.ImagePath,  category.CategoryId)
-		if err!=nil {
-			if err2 := help.DeleteImage(category.ImagePath); err2!=nil {
-				return c.SendString(help.ShowError(err2))
+
+		var oldPath string
+		if err := db.Get(&oldPath, `SELECT imagePath FROM categories WHERE categoryId = ?`, category.CategoryId); err != nil {
+			return c.SendString(help.ShowError(err))
+		}
+
+		if category.Image != nil {
+			path, err := help.SaveImage(c, category.Image)
+			if err != nil {
+				return c.SendString(help.ShowError(err))
 			}
-			return c.SendString(help.ShowError(err))
-		}
-		if err := help.DeleteImage(oldPath); err!=nil{
-			return c.SendString(help.ShowError(err))
+			category.ImagePath = path
+
+			_, err = db.Exec(`UPDATE categories SET categoryName = ?, imagePath = ? WHERE categoryId = ?`,
+				category.CategoryName, category.ImagePath, category.CategoryId)
+			if err != nil {
+				if err2 := help.DeleteImage(category.ImagePath); err2 != nil {
+					return c.SendString(help.ShowError(err2))
+				}
+				return c.SendString(help.ShowError(err))
+			}
+			if err := help.DeleteImage(oldPath); err != nil {
+				return c.SendString(help.ShowError(err))
+			}
+		} else {
+			_, err := db.Exec(`UPDATE categories SET categoryName = ? WHERE categoryId = ?`,
+				category.CategoryName, category.CategoryId)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
 		}
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
@@ -590,24 +599,35 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		} 
 
-		oldPath:= member.MemberImagePath
-
-		if path, err:= help.SaveImage(c, member.MemberImage); err!=nil {
-			return c.SendString(help.ShowError(err))
-		} else {
-			member.MemberImagePath = path
-		}
-
-		_,err:= db.Exec(`UPDATE members SET memberName=?, memberTitle=?, memberDescription=?, memberImagePath=? WHERE memberId = ?`,
-						member.MemberName, member.MemberTitle, member.MemberDescription, member.MemberImagePath, member.MemberId)
-		if err!=nil {
-			if err2 := help.DeleteImage(member.MemberImagePath); err2!=nil {
-				return c.SendString(help.ShowError(err2))
+		if member.MemberImage != nil {
+			path, err:= help.SaveImage(c, member.MemberImage)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
 			}
-			return c.SendString(help.ShowError(err))
-		}
-		if err := help.DeleteImage(oldPath); err!=nil{
-			return c.SendString(help.ShowError(err))
+			member.MemberImagePath = path
+			var oldPath string 
+			err= db.Get(&oldPath, `SELECT memberImagePath FROM members WHERE memberID = ?`, member.MemberId)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			_,err = db.Exec(`UPDATE members SET memberName=?, memberTitle=?, memberDescription=?, memberImagePath=? WHERE memberId = ?`,
+						member.MemberName, member.MemberTitle, member.MemberDescription, member.MemberImagePath, member.MemberId)
+			if err!=nil {
+				if err2 := help.DeleteImage(member.MemberImagePath); err2!=nil {
+					return c.SendString(help.ShowError(err2))
+				}
+				return c.SendString(help.ShowError(err))
+			}
+			if err := help.DeleteImage(oldPath); err!=nil{
+				return c.SendString(help.ShowError(err))
+			}
+
+		} else {
+			_,err:= db.Exec(`UPDATE members SET memberName=?, memberTitle=?, memberDescription=? WHERE memberId = ?`,
+						member.MemberName, member.MemberTitle, member.MemberDescription, member.MemberId)
+			if err != nil {
+				return c.SendString(help.ShowError(err))
+			}
 		}
 
 		c.Set("HX-Trigger", "success")

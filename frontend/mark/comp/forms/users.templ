@@ -16,113 +16,6 @@ templ Users(users []strs.User) {
     </div>
 }
 
-templ createUserForm() {
-    <div class="card bg-base-100 w-full max-w-lg mx-auto shadow-xl border border-base-300">
-        <div class="card-body">
-            <h2 class="card-title text-xl font-bold mb-4">Créer un nouvel utilisateur</h2>
-
-            <form
-                hx-post="/createUser"
-                hx-target-error="#res"
-                hx-swap="none"
-                x-data="{ 
-                    username: '', 
-                    password: '', 
-                    roles: [], 
-                    get accessString() { return this.roles.join(''); } 
-                }"
-                @htmx:after-request="if (detail.successful) { username = ''; password = ''; roles = []; }"
-                class="space-y-4"
-            >
-                <!-- Username -->
-                <div class="form-control w-full">
-                    <label class="label pb-1.5">
-                        <span class="label-text font-medium">Nom d'utilisateur</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="UserName"
-                        x-model="username"
-                        placeholder="ex: johndoe"
-                        class="input input-bordered w-full"
-                        required
-                        minlength="3"
-                        maxlength="50"
-                    />
-                </div>
-
-                <!-- Password with 12-char limit warning -->
-                <div class="form-control w-full">
-                    <label class="label pb-1.5">
-                        <span class="label-text font-medium">Mot de passe (6-12 caractères)</span>
-                    </label>
-                    <input
-                        type="password"
-                        name="Password"
-                        x-model="password"
-                        placeholder="••••••••"
-                        class="input input-bordered w-full"
-                        required
-                        minlength="6"
-                        maxlength="12"
-                    />
-                    <div x-show="password.length >= 12" x-cloak class="label pb-0 pt-1">
-                        <span class="label-text-alt text-warning font-medium">⚠️ Limite maximale de 12 caractères atteinte</span>
-                    </div>
-                </div>
-
-                <!-- Access Rights (cmd) -->
-                <div class="form-control w-full">
-                    <label class="label pb-1.5">
-                        <span class="label-text font-medium">Droits d'accès</span>
-                    </label>
-                    
-                    <div class="grid grid-cols-3 gap-2 bg-base-200 p-3 rounded-lg">
-                        <label class="label cursor-pointer justify-start gap-2">
-                            <input
-                                type="checkbox"
-                                value="c"
-                                x-model="roles"
-                                class="checkbox checkbox-primary checkbox-sm"
-                            />
-                            <span class="label-text">Créer (c)</span>
-                        </label>
-
-                        <label class="label cursor-pointer justify-start gap-2">
-                            <input
-                                type="checkbox"
-                                value="m"
-                                x-model="roles"
-                                class="checkbox checkbox-primary checkbox-sm"
-                            />
-                            <span class="label-text">Modifier (m)</span>
-                        </label>
-
-                        <label class="label cursor-pointer justify-start gap-2">
-                            <input
-                                type="checkbox"
-                                value="d"
-                                x-model="roles"
-                                class="checkbox checkbox-primary checkbox-sm"
-                            />
-                            <span class="label-text">Supprimer (d)</span>
-                        </label>
-                    </div>
-
-                    <input type="hidden" name="Access" :value="accessString" />
-                </div>
-
-                <!-- Submit Button -->
-                <div class="card-actions justify-end pt-4">
-                    <button type="submit" class="btn btn-primary w-full">
-                        Créer l'utilisateur
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-}
-
 templ userAccordion(u strs.User, isFirst bool) {
     <div class="collapse bg-base-100 border border-base-300 rounded-box shadow-sm">
         if isFirst {
@@ -134,11 +27,6 @@ templ userAccordion(u strs.User, isFirst bool) {
         <!-- Accordion Header -->
         <div class="collapse-title font-semibold flex items-center justify-between pr-8">
             <div class="flex items-center gap-3">
-                <div class="avatar placeholder">
-                    <div class="bg-neutral text-neutral-content rounded-full w-8">
-                        <span class="text-xs uppercase">{ u.UserName[:1] }</span>
-                    </div>
-                </div>
                 <span class="text-base-content font-bold">{ u.UserName }</span>
             </div>
         </div>
@@ -180,7 +68,7 @@ templ userAccordion(u strs.User, isFirst bool) {
                         <span class="label-text font-medium">Droits d'accès</span>
                     </label>
                     
-                    <div class="grid grid-cols-3 gap-2 bg-base-200 p-3 rounded-lg">
+                    <div class="flex flex-col md:flex-row gap-3 flex-wrap justify-around bg-base-200 p-3 rounded-lg">
                         <label class="label cursor-pointer justify-start gap-2">
                             <input
                                 type="checkbox"
@@ -237,9 +125,9 @@ templ userAccordion(u strs.User, isFirst bool) {
 
                 <div class="form-control w-full">
                     <label class="label pb-1.5">
-                        <span class="label-text font-medium">Nouveau mot de passe (6-12 caractères)</span>
+                        <span class="label-text font-medium my-3 text-xs md:text-sm">Nouveau mot de passe (6-12 caractères)</span>
                     </label>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col md:flex-row items-center gap-3">
                         <input
                             type="password"
                             name="Password"
