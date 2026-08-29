@@ -39,6 +39,10 @@ func main() {
 		return help.Hrender(c, pages.Home(help.Logcheck(c)))
 	})
 
+	app.Get("/ping", func(c fiber.Ctx) error {
+		return c.SendString("yo")
+	})
+
 	//atelier
 	app.Get("/atelier", func(c fiber.Ctx) error {
 		return help.Hrender(c, pages.Atelier())
@@ -122,7 +126,17 @@ func main() {
 			}
 			return help.Render(c, comp.ComptesMod(user, users))
 		case "Projets":
-			return help.Render(c, comp.ProjetsMod(user))
+			var categories []strs.Category
+			var projects []strs.Project
+			err := db.SelectContext(c, &categories, "SELECT * FROM categories")
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			err = db.SelectContext(c, &projects, `SELECT * FROM projects`)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.ProjetsMod(user, categories, projects))
 		case "Stars":
 			return help.Render(c, comp.StarsMod(user))
 		case "Messages":
@@ -840,7 +854,7 @@ func main() {
 				}
 				return c.SendString(help.ShowError(err))
 			}
-			project.ImagePaths = project.ImagePaths + path + ";"
+			project.ImagePaths = path + ";" + project.ImagePaths
 		}
 		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
 
@@ -890,6 +904,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		}
 		var toDelete []string
+		var comPaths []string
 		//main image
 		if project.MImage != nil {
 			toDelete = append(toDelete, oldProject.MImagePath)
@@ -897,6 +912,9 @@ func main() {
 			if err !=nil {
 				return c.SendString(help.ShowError(err))
 			}
+			comPaths = append(comPaths, project.MImagePath)
+		} else {
+			project.MImagePath = oldProject.MImagePath
 		}
 		//images
 		oldPaths:= strings.Split(oldProject.ImagePaths, ";")
@@ -914,8 +932,7 @@ func main() {
 				toDelete = append(toDelete, v)
 			}
 		}
-		var comPaths []string
-		comPaths = append(comPaths, project.MImagePath)
+		
 		for _, image := range project.Images {
 			path, err := help.SaveImage(c, image)
 			comPaths = append(comPaths, path)
@@ -932,7 +949,7 @@ func main() {
 				}
 				return c.SendString(help.ShowError(err))
 			}
-			project.ImagePaths = project.ImagePaths + path + ";"
+			project.ImagePaths = path + ";" + project.ImagePaths
 		}
 		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
 		
@@ -963,10 +980,21 @@ func main() {
 		}
 
 		id:= c.FormValue("projectId")
-		mPath:=c.FormValue("mPath")
-		paths:=strings.Split(c.FormValue("paths"), ";" )
+		//get from database and delete
+		var mPath string
+		var sPaths string
+		err := db.Get(&mPath, `SELECT mImagePath FROM projects WHERE projectId = ?`, id)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		err = db.Get(&sPaths, `SELECT imagePaths FROM projects WHERE projectId = ?`, id)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
 
-		_,err:= db.Exec(`DELETE FROM projects WHERE id=?`, id)
+		paths:=strings.Split(sPaths, ";" )
+
+		_,err= db.Exec(`DELETE FROM projects WHERE projectId=?`, id)
 		if err!=nil{
 			return c.SendString(help.ShowError(err))
 		}

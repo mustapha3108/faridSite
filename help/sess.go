@@ -26,7 +26,7 @@ func BasicStart(app *fiber.App){
 	app.Use(logger.New(logger.Config{
 		Format: "${time} | ${status} | ${latency} | ${method} ${path}\n",
 	}))
-
+//
 	gob.Register(&strs.User{}) 
 
 	storage := sqlite3.New(sqlite3.Config{

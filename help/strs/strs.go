@@ -25,9 +25,9 @@ type Project struct {
 	ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"required,min=2,max=150"`
 	Description string                  `db:"description"  form:"Description" validate:"required,min=5,max=5000"`
 	ImagePaths  string                  `db:"imagePaths"   form:"ImagePaths"`
-	Images      []*multipart.FileHeader `db:"-"            form:"Images"      validate:"required,gt=0"`
+	Images      []*multipart.FileHeader `db:"-"            form:"Images"`
 	MImagePath  string                  `db:"mImagePath"   form:"MImagePath"`
-	MImage      *multipart.FileHeader   `db:"-"            form:"MImage"      validate:"required"`
+	MImage      *multipart.FileHeader   `db:"-"            form:"MImage"`
 }
 
 type ProjectMod struct {

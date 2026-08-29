@@ -1,0 +1,469 @@
+package forms
+
+import "crow/help/strs"
+
+/*
+type Project struct {
+    ProjectId   int                     `db:"projectId"    form:"ProjectId"`
+    UserId      int                     `db:"userId"       form:"UserId"`
+    CategoryId  int                     `db:"categoryId"   form:"CategoryId"`
+    ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"required,min=2,max=150"`
+    Description string                  `db:"description"  form:"Description" validate:"required,min=5,max=5000"`
+    ImagePaths  string                  `db:"imagePaths"   form:"ImagePaths"`
+    Images      []*multipart.FileHeader `db:"-"            form:"Images"`
+    MImagePath string                  `db:"mImagePath"   form:"MImagePath"`
+    MImage      *multipart.FileHeader   `db:"-"            form:"MImage"`
+}
+*/
+
+templ CreateProject(user *strs.User, categories []strs.Category) {
+
+    <form
+        class="card bg-base-200 border border-base-300 shadow-xl w-full max-w-2xl mx-auto"
+
+        hx-post="/uploadProject"
+        hx-target="#projectres"
+        hx-swap="innerHTML"
+        hx-encoding="multipart/form-data"
+
+        x-data="{
+            preview: null,
+            images: []
+        }"
+    >
+
+        <div class="card-body gap-6">
+
+            <!-- ============================== -->
+            <!-- HEADER -->
+            <!-- ============================== -->
+
+            <div class="flex items-center gap-3">
+
+                <div>
+                    <h2 class="card-title text-2xl">
+                        Créer un projet
+                    </h2>
+
+                    <p class="text-sm opacity-60">
+                        Ajoutez les informations et les images de votre projet.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="divider my-0"></div>
+
+
+            <!-- ============================== -->
+            <!-- PROJECT INFORMATION -->
+            <!-- ============================== -->
+
+            <section class="space-y-4">
+
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        Informations sur le projet
+                    </h3>
+
+                    <p class="text-sm opacity-60">
+                        Informations de base sur votre projet.
+                    </p>
+                </div>
+
+
+                <input
+                    type="hidden"
+                    name="UserId"
+                    value={ user.UserId }
+                />
+
+
+                <!-- Project name -->
+
+                <label class="form-control w-full">
+
+                    <div class="label">
+                        <span class="label-text font-medium">
+                            Nom du projet
+                        </span>
+                    </div>
+
+                    <input
+                        type="text"
+                        name="ProjectName"
+                        class="input input-bordered w-full"
+                        placeholder="Mon super projet"
+                        required
+                    />
+
+                </label>
+
+
+                <!-- Category -->
+
+                <label class="form-control w-full">
+
+                    <div class="label">
+                        <span class="label-text font-medium">
+                            Catégorie
+                        </span>
+                    </div>
+
+                    <select
+                        class="select select-bordered w-full"
+                        name="CategoryId"
+                        required
+                    >
+
+                        <option disabled selected value="">
+                            Sélectionnez une catégorie
+                        </option>
+
+                        for _, v := range categories {
+
+                            <option value={ v.CategoryId }>
+                                { v.CategoryName }
+                            </option>
+
+                        }
+
+                    </select>
+
+                </label>
+
+
+                <!-- Description -->
+
+                <label class="form-control w-full">
+
+                    <div class="label">
+                        <span class="label-text font-medium">
+                            Description
+                        </span>
+                    </div>
+
+                    <textarea
+                        name="Description"
+                        class="textarea textarea-bordered w-full min-h-32"
+                        placeholder="Décrivez votre projet..."
+                        required
+                    ></textarea>
+
+                </label>
+
+            </section>
+
+
+            <div class="divider my-0"></div>
+
+
+            <!-- ============================== -->
+            <!-- MAIN IMAGE -->
+            <!-- ============================== -->
+
+            <section class="space-y-4">
+
+                <div>
+                    <div class="flex items-center gap-2">
+
+                        <h3 class="font-semibold text-lg">
+                            Image principale
+                        </h3>
+
+                        <span class="badge badge-neutral badge-sm">
+                            Requis
+                        </span>
+
+                    </div>
+
+                    <p class="text-sm opacity-60">
+                        Cette image représentera votre projet.
+                    </p>
+                </div>
+
+
+                <div class="card bg-base-100 border border-base-300">
+
+                    <div class="card-body">
+
+                        <div class="flex flex-col sm:flex-row gap-5 items-center">
+
+
+                            <!-- Preview -->
+
+                            <div
+                                class="w-40 h-40 rounded-xl bg-base-200 border border-base-300 flex items-center justify-center overflow-hidden"
+                            >
+
+                                <template x-if="preview">
+
+                                    <img
+                                        :src="preview"
+                                        class="w-full h-full object-cover"
+                                        alt="Aperçu de l'image principale"
+                                    />
+
+                                </template>
+
+                                <template x-if="!preview">
+
+                                    <div class="text-center opacity-40">
+
+                                        <div class="text-4xl mb-2">
+                                            🖼
+                                        </div>
+
+                                        <span class="text-xs">
+                                            Aperçu
+                                        </span>
+
+                                    </div>
+
+                                </template>
+
+                            </div>
+
+
+                            <!-- Upload -->
+
+                            <div class="flex-1 w-full">
+
+                                <label class="form-control w-full">
+
+                                    <div class="label">
+                                        <span class="label-text font-medium">
+                                            Choisir l'image principale
+                                        </span>
+                                    </div>
+
+                                    <input
+                                        type="file"
+                                        name="MImage"
+                                        accept="image/*"
+                                        class="file-input file-input-bordered w-full m-2"
+                                        required
+
+                                        @change="
+                                            if ($event.target.files[0]) {
+                                                preview = URL.createObjectURL(
+                                                    $event.target.files[0]
+                                                )
+                                            }
+                                        "
+                                    />
+
+                                    <div class="label">
+                                        <span class="label-text-alt opacity-60">
+                                            JPG, PNG, WEBP, etc.
+                                        </span>
+                                    </div>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <div class="divider my-0"></div>
+
+
+            <!-- ============================== -->
+            <!-- ADDITIONAL IMAGES -->
+            <!-- ============================== -->
+
+            <section class="space-y-4">
+
+                <div class="flex items-start justify-between">
+
+                    <div>
+
+                        <h3 class="font-semibold text-lg">
+                            Images du projet
+                        </h3>
+
+                        <p class="text-sm opacity-60">
+                            Ajoutez des images pour présenter votre projet.
+                        </p>
+
+                    </div>
+
+
+                    <template x-if="images.length > 0">
+
+                        <span
+                            class="badge badge-primary"
+                            x-text="images.length + ' sélectionnée(s)'"
+                        ></span>
+
+                    </template>
+
+                </div>
+
+
+                <!-- Upload button -->
+
+                <label
+                    class="border-2 border-dashed border-base-300 hover:border-primary rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+
+                    <div class="text-3xl">
+                        ＋
+                    </div>
+
+                    <span class="font-medium">
+                        Ajouter des images
+                    </span>
+
+                    <span class="text-xs opacity-60">
+                        Vous pouvez sélectionner des images plusieurs fois
+                    </span>
+
+
+                    <input
+                        x-ref="imageInput"
+                        type="file"
+                        name="Images"
+                        accept="image/*"
+                        multiple
+                        class="hidden"
+
+                        @change="
+                            Array.from($event.target.files).forEach(file => {
+
+                                images.push({
+                                    file: file,
+                                    preview: URL.createObjectURL(file)
+                                });
+
+                            });
+
+                            const dt = new DataTransfer();
+
+                            images.forEach(image => {
+                                dt.items.add(image.file);
+                            });
+
+                            $refs.imageInput.files = dt.files;
+                        "
+                    />
+
+                </label>
+
+
+                <!-- Empty state -->
+
+                <template x-if="images.length === 0">
+
+                    <div class="alert bg-base-100 border border-base-300">
+
+                        <span class="opacity-60">
+                            Aucune image de projet sélectionnée pour le moment.
+                        </span>
+
+                    </div>
+
+                </template>
+
+
+                <!-- Image previews -->
+
+                <template x-if="images.length > 0">
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+
+                        <template
+                            x-for="(image, index) in images"
+                            :key="index"
+                        >
+
+                            <div
+                                class="card bg-base-100 border border-base-300 overflow-hidden"
+                            >
+
+                                <figure class="aspect-square relative">
+
+                                    <img
+                                        :src="image.preview"
+                                        class="w-full h-full object-cover"
+                                        alt="Aperçu de l'image du projet"
+                                    />
+
+                                    <div class="absolute top-2 left-2">
+                                        <span class="badge badge-primary badge-sm">
+                                            Nouvelle
+                                        </span>
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-circle btn-error btn-xs absolute top-2 right-2"
+
+                                        @click="
+                                            URL.revokeObjectURL(image.preview);
+
+                                            images.splice(index, 1);
+
+                                            const dt = new DataTransfer();
+
+                                            images.forEach(image => {
+                                                dt.items.add(image.file);
+                                            });
+
+                                            $refs.imageInput.files = dt.files;
+                                        "
+                                    >
+                                        ✕
+                                    </button>
+
+                                </figure>
+
+                            </div>
+
+                        </template>
+
+                    </div>
+
+                </template>
+
+            </section>
+
+
+            <div class="divider my-0"></div>
+
+
+            <!-- ============================== -->
+            <!-- SUBMIT -->
+            <!-- ============================== -->
+
+            <div class="card-actions justify-end">
+
+                <button
+                    type="submit"
+                    class="btn btn-neutral"
+                >
+                    Créer le projet
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+
+    <div
+        id="projectres"
+        class="text-center mt-4"
+    ></div>
+
+}

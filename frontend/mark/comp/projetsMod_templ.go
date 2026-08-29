@@ -9,10 +9,11 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"crow/frontend/mark/comp/forms"
 	"crow/help/strs"
 )
 
-func ProjetsMod(user *strs.User) templ.Component {
+func ProjetsMod(user *strs.User, categories []strs.Category, projects []strs.Project) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -33,7 +34,23 @@ func ProjetsMod(user *strs.User) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"flex justify-center items-center\"><form hx-post=\"/uploadProject\" hx-encoding=\"multipart/form-data\" hx-target=\"#result\" hx-swap=\"innerHTML\" class=\"flex flex-col gap-4 w-full max-w-md\"><div class=\"form-control w-full\"><label class=\"label\" for=\"ProjectName\"><span class=\"label-text\">Project Name</span></label> <input type=\"text\" id=\"ProjectName\" name=\"ProjectName\" class=\"input input-bordered w-full\" minlength=\"2\" maxlength=\"150\" required></div><div class=\"form-control w-full\"><label class=\"label\" for=\"Description\"><span class=\"label-text\">Description</span></label> <textarea id=\"Description\" name=\"Description\" class=\"textarea textarea-bordered w-full h-32\" minlength=\"5\" maxlength=\"5000\" required></textarea></div><div class=\"form-control w-full\"><label class=\"label\" for=\"CategoryId\"><span class=\"label-text\">Category ID</span></label> <input type=\"number\" id=\"CategoryId\" name=\"CategoryId\" class=\"input input-bordered w-full\" value=\"1\" min=\"1\" required></div><div class=\"form-control w-full\"><label class=\"label\" for=\"MImage\"><span class=\"label-text\">Main Image</span></label> <input type=\"file\" id=\"MImage\" name=\"MImage\" class=\"file-input file-input-bordered w-full\" accept=\"image/*\" required></div><div class=\"form-control w-full\"><label class=\"label\" for=\"Images\"><span class=\"label-text\">Gallery Images</span></label> <input type=\"file\" id=\"Images\" name=\"Images\" class=\"file-input file-input-bordered w-full\" accept=\"image/*\" multiple required></div><button type=\"submit\" class=\"btn btn-primary w-full\">Create Project</button><div id=\"result\" class=\"text-white\"></div></form></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-full max-w-4xl mx-auto self-start min-h-screen\"><div class=\"tabs tabs-border w-full\"><input type=\"radio\" name=\"my_tabs_2\" class=\"tab\" aria-label=\"Créer un utilisateur\"><div class=\"tab-content border-base-300 bg-base-100 p-6 md:p-10\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = forms.CreateProject(user, categories).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div><input type=\"radio\" name=\"my_tabs_2\" class=\"tab\" aria-label=\"Utilisateurs\" checked=\"checked\"><div class=\"tab-content border-base-300 bg-base-100 p-6 md:p-10\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = forms.Projects(categories, projects).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
