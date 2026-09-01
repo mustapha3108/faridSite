@@ -1,0 +1,80 @@
+package forms
+
+templ CreateSoftware() {
+    <div class="card bg-base-100 w-full max-w-lg mx-auto shadow-xl border border-base-300">
+        <div class="card-body p-6 sm:p-8">
+            <div class="mb-2">
+                <h2 class="card-title text-xl font-bold text-base-content">Ajouter un logiciel</h2>
+                <p class="text-xs text-base-content/60">Enregistrez les logiciels et spécifiez s'ils sont obligatoires.</p>
+            </div>
+
+            <form 
+                hx-post="/addSoftware" 
+                hx-target="#cSoftwareRes" 
+                hx-swap="innerHTML"
+                x-data="{ name: '', required: '0' }"
+                @htmx:after-request="if (detail.successful) { name = ''; required = '0'; }"
+                class="space-y-4"
+            >
+                <!-- Software Name -->
+                <div class="form-control w-full">
+                    <label class="label pb-1.5">
+                        <span class="label-text font-medium text-xs uppercase tracking-wider text-base-content/70">Nom du logiciel *</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        name="SoftwareName" 
+                        x-model="name"
+                        placeholder="ex: AutoCAD, SolidWorks, Revit..." 
+                        class="input input-bordered w-full focus:input-primary" 
+                        required 
+                        minlength="2"
+                        maxlength="150"
+                    />
+                </div>
+
+                <!-- Requirement Status Selection -->
+                <div class="form-control w-full">
+                    <label class="label pb-1.5">
+                        <span class="label-text font-medium text-xs uppercase tracking-wider text-base-content/70">Niveau d'exigence</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3 bg-base-200/50 p-2.5 rounded-xl border border-base-200">
+                        <label class="label cursor-pointer justify-start gap-2.5 p-2 rounded-lg hover:bg-base-200/80 transition-colors">
+                            <input 
+                                type="radio" 
+                                value="0" 
+                                name="Required" 
+                                x-model="required"
+                                class="radio radio-primary radio-sm" 
+                            />
+                            <span class="label-text text-sm font-medium">Optionnel</span>
+                        </label>
+
+                        <label class="label cursor-pointer justify-start gap-2.5 p-2 rounded-lg hover:bg-base-200/80 transition-colors">
+                            <input 
+                                type="radio" 
+                                value="1" 
+                                name="Required" 
+                                x-model="required"
+                                class="radio radio-primary radio-sm" 
+                            />
+                            <span class="label-text text-sm font-medium">Obligatoire</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" class="btn btn-primary w-full gap-2 shadow-sm">
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Ajouter le logiciel
+                    </button>
+                </div>
+            </form>
+
+            <div id="cSoftwareRes" class="text-error font-medium text-xs text-center mt-2"></div>
+        </div>
+    </div>
+}

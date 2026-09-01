@@ -1,0 +1,78 @@
+package pageComp
+
+import (
+    "crow/help/strs"
+    "strconv"
+)
+
+templ comment(star strs.Rating) {
+    <div class="card bg-base-100 border border-base-300 shadow-sm p-4 sm:p-5 rounded-2xl hover:border-base-content/20 transition-all space-y-2.5 w-full">
+        <div class="flex items-center justify-between gap-3">
+            <h4 class="font-bold text-base text-base-content">{ star.Name }</h4>
+            
+            <!-- Visual Stars for Single Review -->
+            <div class="rating rating-xs pointer-events-none gap-0.5">
+                for i := 1; i <= 5; i++ {
+                    if i <= star.Rating {
+                        <span class="mask mask-star-2 bg-amber-400 w-3.5 h-3.5 inline-block"></span>
+                    } else {
+                        <span class="mask mask-star-2 bg-base-300 w-3.5 h-3.5 inline-block"></span>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Comment Text -->
+        if star.Comment != "" {
+            <p class="text-sm text-base-content/85 leading-relaxed italic bg-base-200/40 p-3 rounded-xl border border-base-200/60">
+                "{ star.Comment }"
+            </p>
+        } else {
+            <p class="text-xs text-base-content/40 italic">
+                A laissé une note sans commentaire écrit.
+            </p>
+        }
+    </div>
+}
+
+templ StarsPage(stars []strs.Rating, offset int, limit int, cont bool) {
+    <!-- Comments List (Vertical Stack) -->
+    <div class="space-y-4 w-full">
+        if len(stars) == 0 && offset == 0 {
+            <div class="card bg-base-100 border border-base-300 p-8 text-center text-base-content/60 rounded-2xl w-full">
+                <p class="font-medium text-sm">Soyez le premier à donner votre avis !</p>
+            </div>
+        } else {
+            for _, v := range stars {
+                @comment(v)
+            }
+        }
+    </div>
+
+    <!-- "Load More" Pagination Container -->
+    if cont {
+        <div class="w-full pt-4">
+            <form 
+                hx-post="/moreRatings" 
+                hx-target="closest div" 
+                hx-swap="outerHTML" 
+                class="w-full flex justify-center"
+            >
+                <input type="hidden" value={ strconv.Itoa(offset) } name="offset" />
+                <input type="hidden" value={ strconv.Itoa(limit) } name="limit" />
+                
+                <button 
+                    type="submit" 
+                    class="btn btn-outline btn-primary btn-sm sm:btn-md gap-2 rounded-xl shadow-xs hover:scale-[1.02] active:scale-95 transition-all w-full sm:w-auto px-8"
+                >
+                    <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span>Afficher plus d'avis</span>
+                </button>
+            </form>
+        </div>
+    }
+}
+
+

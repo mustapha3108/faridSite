@@ -10,9 +10,12 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"crow/frontend/mark/comp"
+	"crow/frontend/mark/comp/pageComp"
+	"crow/help/strs"
+	"fmt"
 )
 
-func Star() templ.Component {
+func Star(stars []strs.Rating, cont bool, avg float64) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -37,7 +40,82 @@ func Star() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div>this is the star page</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"min-h-screen bg-base-200/40 py-10 px-4 sm:px-6 lg:px-8\"><div class=\"max-w-5xl mx-auto space-y-10\"><!-- Hero & Average Rating Section --><div class=\"card bg-base-100 border border-base-300 shadow-sm p-6 sm:p-8 text-center space-y-4\"><h1 class=\"text-3xl sm:text-4xl font-extrabold tracking-tight text-base-content\">Avis & Témoignages</h1><p class=\"text-base-content/70 max-w-xl mx-auto text-sm sm:text-base\">Découvrez les retours de nos clients et partagez votre propre expérience avec notre équipe.</p><!-- Average Rating Pill --><div class=\"inline-flex flex-col items-center justify-center bg-base-200/60 border border-base-300 rounded-2xl px-6 py-4 mx-auto shadow-inner\"><div class=\"flex items-center gap-2\"><span class=\"text-4xl sm:text-5xl font-black text-amber-500\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.1f", avg))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/star.templ`, Line: 29, Col: 54}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span> <span class=\"text-base text-base-content/50 font-bold self-end mb-1\">/ 5</span></div><!-- Visual Stars for Average --><div class=\"rating rating-sm pointer-events-none gap-1 mt-2\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for i := 1; i <= 5; i++ {
+			if float64(i) <= (avg + 0.5) {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span class=\"mask mask-star-2 bg-amber-400 w-4 h-4 inline-block\"></span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span class=\"mask mask-star-2 bg-base-300 w-4 h-4 inline-block\"></span>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div><span class=\"text-xs text-base-content/60 mt-1 font-medium\">Note globale moyenne</span></div></div><!-- Two-Column Layout on Desktop: Form (Left) & Comments (Right) --><div class=\"grid grid-cols-1 lg:grid-cols-12 gap-8 items-start\"><!-- Left Column: Submit Rating Form --><div class=\"lg:col-span-5 lg:sticky lg:top-20\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = giverate().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><!-- Right Column: Live Reviews Stream --><div class=\"lg:col-span-7 space-y-6\"><div class=\"flex items-center justify-between pb-2 border-b border-base-300\"><h2 class=\"text-xl font-bold text-base-content flex items-center gap-2\"><span>Avis Récents</span></h2><span class=\"text-xs text-base-content/60 font-medium\">Avis vérifiés</span></div><!-- Dynamic Comments & Pagination Stream -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = pageComp.StarsPage(stars, 0, 2, cont).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div></div></main>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func giverate() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"card bg-base-100 border border-base-300 shadow-md p-6 relative\" x-data=\"{ showToast: false, isSubmitting: false }\" @success.window=\"showToast = true; isSubmitting = false; $refs.ratingForm.reset(); setTimeout(() => showToast = false, 4000)\"><!-- Floating Success Toast Notification --><div x-show=\"showToast\" x-cloak x-transition:enter=\"transition ease-out duration-300\" x-transition:enter-start=\"opacity-0 translate-y-2 scale-95\" x-transition:enter-end=\"opacity-100 translate-y-0 scale-100\" x-transition:leave=\"transition ease-in duration-200\" x-transition:leave-start=\"opacity-100 scale-100\" x-transition:leave-end=\"opacity-0 translate-y-2 scale-95\" class=\"toast toast-top toast-end z-50\"><div class=\"alert alert-success text-white shadow-lg flex items-center gap-2\"><svg class=\"stroke-current shrink-0 h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg> <span class=\"text-sm font-medium\">Merci ! Votre avis a été envoyé avec succès.</span></div></div><h3 class=\"text-lg font-bold text-base-content mb-1\">Donnez votre avis</h3><p class=\"text-xs text-base-content/60 mb-5\">Votre évaluation nous aide à nous améliorer en continu.</p><!-- Rating Form --><form x-ref=\"ratingForm\" hx-post=\"/rate\" hx-target=\"#rateRes\" hx-swap=\"innerHTML\" @submit=\"isSubmitting = true\" class=\"space-y-4\"><!-- Interactive Star Selection --><div class=\"form-control\"><label class=\"label pb-1.5\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Votre note *</span></label><div class=\"rating rating-md gap-1 bg-base-200/50 p-2.5 rounded-xl border border-base-200 justify-center\"><input type=\"radio\" name=\"Rating\" value=\"1\" class=\"mask mask-star-2 bg-amber-400 hover:scale-110 transition-transform cursor-pointer\" aria-label=\"1 star\"> <input type=\"radio\" name=\"Rating\" value=\"2\" class=\"mask mask-star-2 bg-amber-400 hover:scale-110 transition-transform cursor-pointer\" aria-label=\"2 star\"> <input type=\"radio\" name=\"Rating\" value=\"3\" class=\"mask mask-star-2 bg-amber-400 hover:scale-110 transition-transform cursor-pointer\" aria-label=\"3 star\"> <input type=\"radio\" name=\"Rating\" value=\"4\" class=\"mask mask-star-2 bg-amber-400 hover:scale-110 transition-transform cursor-pointer\" aria-label=\"4 star\"> <input type=\"radio\" name=\"Rating\" value=\"5\" class=\"mask mask-star-2 bg-amber-400 hover:scale-110 transition-transform cursor-pointer\" aria-label=\"5 star\"></div></div><!-- Name Field --><div class=\"form-control\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Votre Nom / Pseudo *</span></label> <input type=\"text\" class=\"input input-bordered input-sm sm:input-md w-full focus:input-primary rounded-lg\" name=\"Name\" placeholder=\"ex: Mohammed\" required minlength=\"2\" maxlength=\"60\"></div><!-- Comment Field --><div class=\"form-control\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Votre Commentaire</span></label> <textarea class=\"textarea textarea-bordered w-full h-24 text-sm focus:textarea-primary rounded-lg resize-none\" name=\"Comment\" placeholder=\"Partagez vos impressions détaillées...\" maxlength=\"1000\"></textarea></div><!-- Submit Button --><button class=\"btn btn-primary w-full gap-2 shadow-sm rounded-lg\" type=\"submit\" :disabled=\"isSubmitting\"><svg x-show=\"!isSubmitting\" class=\"w-4 h-4 stroke-current fill-none\" viewBox=\"0 0 24 24\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M14 5l7 7m0 0l-7 7m7-7H3\"></path></svg> <span x-show=\"isSubmitting\" class=\"loading loading-spinner loading-xs\"></span> <span x-text=\"isSubmitting ? 'Envoi en cours...' : 'Publier mon avis'\"></span></button></form><div id=\"rateRes\" class=\"text-error text-xs font-medium mt-2 text-center\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

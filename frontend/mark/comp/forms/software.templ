@@ -1,0 +1,105 @@
+package forms
+
+import (
+    "crow/help/strs"
+    "strconv"
+)
+
+templ Software(software []strs.Software) {
+    <div class="w-full max-w-4xl mx-auto space-y-3 p-4">
+        if len(software) == 0 {
+            <div class="card bg-base-100 border border-base-300 p-8 text-center text-base-content/60 rounded-2xl">
+                <p class="font-medium text-sm">Aucun logiciel enregistré pour le moment.</p>
+            </div>
+        } else {
+            for _, v := range software {
+                @softAccord(v)
+            }
+        }
+
+        <div id="softres"></div>
+    </div>
+}
+
+templ softAccord(software strs.Software) {
+    <div 
+        x-data="{ confirmDelete: false, isDeleted: false }"
+        x-show="!isDeleted"
+        class="collapse collapse-arrow bg-base-100 border border-base-300 shadow-sm rounded-box hover:border-base-content/20 transition-all"
+        :class="{
+            'border-l-4 border-l-error': %t,
+            'border-l-4 border-l-base-300': %t
+        }"
+    >
+        <input type="radio" name="software-accordion" />
+
+        <!-- Header -->
+        <div class="collapse-title flex items-center justify-between gap-3 pr-10 py-3.5">
+            <div class="flex items-center gap-3">
+                <span class="font-bold text-base text-base-content">{ software.SoftwareName }</span>
+                
+                if software.Required == 1 {
+                    <span class="badge badge-error badge-sm text-white font-medium gap-1">Obligatoire</span>
+                } else {
+                    <span class="badge badge-ghost badge-sm text-base-content/70 font-medium">Optionnel</span>
+                }
+            </div>
+
+            <span class="text-xs text-base-content/40">ID #{ strconv.Itoa(software.SoftwareId) }</span>
+        </div>
+
+        <!-- Content & Actions -->
+        <div class="collapse-content space-y-3 pt-1 text-sm border-t border-base-200/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                <p class="text-xs text-base-content/70">
+                    if software.Required == 1 {
+                        Ce logiciel est marqué comme <strong>obligatoire</strong> pour les candidats.
+                    } else {
+                        Ce logiciel est marqué comme <strong>optionnel</strong> pour les candidats.
+                    }
+                </p>
+
+                <!-- Two-Stage Delete Confirmation -->
+                <div class="flex items-center gap-1.5 self-end sm:self-auto">
+                    <button 
+                        type="button" 
+                        x-show="!confirmDelete" 
+                        @click="confirmDelete = true"
+                        class="btn btn-sm btn-ghost hover:btn-error hover:text-white text-error gap-1.5 transition-colors"
+                    >
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2 2v2"></path>
+                        </svg>
+                        Supprimer
+                    </button>
+
+                    <div x-show="confirmDelete" x-cloak class="flex items-center gap-1.5">
+                        <button 
+                            type="button" 
+                            @click="confirmDelete = false" 
+                            class="btn btn-sm btn-ghost text-xs"
+                        >
+                            Annuler
+                        </button>
+
+                        <form 
+                            hx-post="/deleteSoftware" 
+                            hx-target="#softres" 
+                            hx-swap="none"
+                            @submit="isDeleted = true"
+                        >
+                            <input type="hidden" name="softwareid" value={ strconv.Itoa(software.SoftwareId) } />
+                            <button 
+                                type="submit" 
+                                class="btn btn-sm btn-error text-white font-bold animate-pulse shadow-sm active:scale-95 transition-transform"
+                            >
+                                Confirmer ?
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -22,5 +22,8 @@
         "templ": "html"
     },
     "emmet.triggerExpansionOnTab": true,
-    "css.lint.unknownAtRules": "ignore"
+    "css.lint.unknownAtRules": "ignore",
+    "files.exclude": {
+    "**/*_templ.go": true
+    }
 }

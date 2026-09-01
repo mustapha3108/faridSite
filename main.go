@@ -2,14 +2,14 @@ package main
 
 import (
 	"crow/frontend/mark/comp"
+	"crow/frontend/mark/comp/pageComp"
 	"crow/frontend/mark/pages"
 	"crow/help"
 	"crow/help/strs"
 	"fmt"
 	"strings"
-
+	"strconv"
 	"github.com/gofiber/fiber/v3"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,9 +18,7 @@ import (
 func main() {
 
 
-	//TODO:= stars (approved) / candidats  / projects / logs /
-
-	godotenv.Load()
+	//TODO:= projects / logs 
 
 	//body limit man, body limit
 	app:= fiber.New(fiber.Config{
@@ -69,7 +67,12 @@ func main() {
 
 	//candidature
 	app.Get("/candidature", func(c fiber.Ctx) error{
-		return help.Hrender(c, pages.Candidature())
+		var software []strs.Software
+		err:= db.Select(&software, `SELECT * FROM Software`)
+		if err!=nil{
+			c.SendString(help.ShowError(err))
+		}
+		return help.Hrender(c, pages.Candidature(software))
 	})
 
 	//contact
@@ -86,7 +89,43 @@ func main() {
 
 	//rating
 	app.Get("/star", func(c fiber.Ctx) error {
-		return help.Hrender(c, pages.Star())
+	    var stars []strs.Rating
+	    err := db.SelectContext(c.Context(), &stars, `SELECT * FROM ratings WHERE approve = ? ORDER BY ratingId DESC LIMIT 3`, 1)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    var avg float64
+	    err = db.GetContext(c.Context(), &avg, `SELECT COALESCE(AVG(rating), 0) FROM ratings WHERE approve = ?`, 1)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    hasMore := len(stars) > 2
+		if hasMore {
+    	    stars = stars[:2]
+    	}
+	    return help.Hrender(c, pages.Star(stars, hasMore, avg))
+	})
+
+	app.Post("/moreRatings", func(c fiber.Ctx) error {
+		limit, err := strconv.Atoi(c.FormValue("limit"))
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		offset, err := strconv.Atoi(c.FormValue("offset"))
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		offset = offset + 1
+	    var stars []strs.Rating
+	    err = db.SelectContext(c.Context(), &stars, `SELECT * FROM ratings WHERE approve = ? ORDER BY ratingId DESC LIMIT ? OFFSET ?`, 1, limit+1, offset*limit)
+	    if err != nil {
+	        return c.SendString(help.ShowError(err))
+	    }
+	    hasMore := len(stars) > limit
+		if hasMore {
+    	    stars = stars[:limit]
+    	}
+	    return help.Render(c, pageComp.StarsPage(stars, offset, limit, hasMore))
 	})
 
 	//chief
@@ -119,7 +158,17 @@ func main() {
 			}
 			return help.Render(c, comp.ContactMod(user, contact))
 		case "Candidats":
-			return help.Render(c, comp.CandidatsMod(user))
+			var candidats []strs.JobApplication
+			err := db.SelectContext(c, &candidats, "SELECT * FROM jobApplications ORDER BY apID DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			var notSeen []strs.CanNot
+			err = db.SelectContext(c, &notSeen, "SELECT * FROM canNot ORDER BY canNotId DESC")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.CandidatsMod(user, candidats, notSeen))
 		case "Atelier":
 			var members []strs.Member
 			err := db.SelectContext(c, &members, "SELECT * FROM members ORDER BY memberID DESC")
@@ -147,7 +196,12 @@ func main() {
 			}
 			return help.Render(c, comp.ProjetsMod(user, categories, projects))
 		case "Stars":
-			return help.Render(c, comp.StarsMod(user))
+			var stars []strs.Rating
+			err:= db.Select(&stars, `SELECT * FROM ratings ORDER BY ratingId DESC`)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.StarsMod(user, stars))
 		case "Messages":
 			var messages []strs.Message
 			err := db.SelectContext(c, &messages, "SELECT * FROM messages ORDER BY messageID DESC")
@@ -159,7 +213,6 @@ func main() {
 			if err != nil {
 			    return c.SendString(help.ShowError(err))
 			}
-
 			return help.Render(c, comp.MessagesMod(user, messages, notSeen))
 		case "Logout":
 			if err:=help.Logout(c); err!=nil{
@@ -181,7 +234,15 @@ func main() {
 			    return c.SendString(help.ShowError(err))
 			}
 			return help.Render(c, comp.PartenairsMod(user, partenairs))
-		}	
+		
+		case "Logiciels":
+			var soft []strs.Software
+			err:= db.Select(&soft, `SELECT * FROM software ORDER BY softwareId DESC`)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.SoftwareMod(user, soft))	
+		}
 		return c.SendString("page introuvable")
 	})
 
@@ -564,8 +625,8 @@ func main() {
 		if err:= help.Validate.Struct(rating); err!=nil {
 			return c.SendString(help.ShowError(err))
 		} 	
-		_,err:= db.Exec(`INSERT INTO ratings (name, comment, rating) VALUES (?,?,?)`,
-						rating.Name, rating.Comment, rating.Rating * 10)
+		_,err:= db.Exec(`INSERT INTO ratings (name, comment, rating, approve) VALUES (?,?,?,?)`,
+						rating.Name, rating.Comment, rating.Rating, 0)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		}
@@ -594,13 +655,14 @@ func main() {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
 		ratingId:= c.FormValue("ratingId")
-		_,err := db.Exec(`DELETE FROM ratings WHERE ratingId = ?`, ratingId)
+		_,err := db.Exec(`UPDATE ratings SET approve = ? WHERE ratingId = ?`, 1, ratingId)
 		if err!= nil {
 			return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
 	})
+
 
 	//members
 	app.Post("/addMember", help.Authmid, func (c fiber.Ctx) error {
@@ -733,7 +795,7 @@ func main() {
 		apply.CvPath = cvPath
 		apply.LetterPath = letterPath
 
-		res,err := db.Exec(`INSERT INTO jobAppilcations (firstName, lastName, email, object, message, software, cv, letter) VALUES (?,?,?,?,?,?,?,?)`,
+		res,err := db.Exec(`INSERT INTO jobApplications (firstName, lastName, email, object, message, software, cv, letter) VALUES (?,?,?,?,?,?,?,?)`,
 						apply.FirstName, apply.LastName, apply.Email, apply.Object, apply.Message, apply.Software, apply.CvPath,apply.LetterPath)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
@@ -759,7 +821,7 @@ func main() {
 		id:= c.FormValue("applyid")
 		cv:= c.FormValue("cv")
 		letter:=c.FormValue("letter")
-		if _,err := db.Exec(`DELETE FROM jobAppilcations WHERE apId = ?`, id); err!=nil{
+		if _,err := db.Exec(`DELETE FROM jobApplications WHERE apId = ?`, id); err!=nil{
 			return c.SendString(help.ShowError(err))
 		}
 		if err:= help.DeletePDF(cv); err!=nil {
@@ -802,7 +864,7 @@ func main() {
 			return c.SendString(help.ShowError(err))
 		} 
 
-		_,err := db.Exec(`INSERT INTO software(siftwareName, required) VALUES (?,?)`,
+		_,err := db.Exec(`INSERT INTO software(softwareName, required) VALUES (?,?)`,
 						software.SoftwareName, software.Required)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
@@ -813,29 +875,29 @@ func main() {
 	})
 
 
-	app.Post("/updateSoftware", help.Authmid, func (c fiber.Ctx) error {
-		user:=c.Locals("user").(*strs.User)
-		if !strings.Contains(user.Access, "f"){
-			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
-		}
-
-		software:= new(strs.Software)
-		if err:=c.Bind().Form(software); err!=nil {
-			return c.SendString(help.ShowError(err))
-		}
-		if err:= help.Validate.Struct(software); err!=nil {
-			return c.SendString(help.ShowError(err))
-		} 
-
-		_,err := db.Exec(`UPDATE software SET softwareName=?, required=? WHERE SoftwareId = ?`,
-						software.SoftwareName, software.Required, software.SoftwareId)
-		if err!=nil {
-			return c.SendString(help.ShowError(err))
-		}
-		
-		c.Set("HX-Trigger", "success")
-		return c.SendString("")
-	})
+	//app.Post("/updateSoftware", help.Authmid, func (c fiber.Ctx) error {
+	//	user:=c.Locals("user").(*strs.User)
+	//	if !strings.Contains(user.Access, "f"){
+	//		return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+	//	}
+//
+	//	software:= new(strs.Software)
+	//	if err:=c.Bind().Form(software); err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	}
+	//	if err:= help.Validate.Struct(software); err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	} 
+//
+	//	_,err := db.Exec(`UPDATE software SET softwareName=?, required=? WHERE SoftwareId = ?`,
+	//					software.SoftwareName, software.Required, software.SoftwareId)
+	//	if err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	}
+	//	
+	//	c.Set("HX-Trigger", "success")
+	//	return c.SendString("")
+	//})
 
 	app.Post("/deleteSoftware", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
@@ -1071,72 +1133,36 @@ func main() {
 		return c.SendString("")
 	})
 
-		app.Post("/paginate", func (c fiber.Ctx) error {
-		page:= new(strs.Page)
-		if err:=c.Bind().Form(page); err!=nil {
-			return c.SendString(help.ShowError(err))
-		}
-		switch page.Table {
-		case 1:
-			var projects []strs.Project
-			if page.Category == "" {
-				err := db.Select(&projects, `SELECT * FROM projects ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-				if err != nil {
-					return c.SendString(help.ShowError(err))
-				}
-			} else {
-				err := db.Select(&projects, `SELECT * FROM projects WHERE categoryId = ? ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Category, page.Limit, page.Offset) 
-				if err != nil {
-					return c.SendString(help.ShowError(err))
-				}
-			}
-			return help.Hrender(PageProjects(projects))
-		case 2:
-			var projects []strs.Project
-			if page.Category == "" {
-				err := db.Select(&projects, `SELECT * FROM projects ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-				if err != nil {
-					return c.SendString(help.ShowError(err))
-				}
-			} else {
-				err := db.Select(&projects, `SELECT * FROM projects WHERE categoryId = ? ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Category, page.Limit, page.Offset) 
-				if err != nil {
-					return c.SendString(help.ShowError(err))
-				}
-			}
-			return help.Hrender(PageProjectsUsers(projects))
-		case 3:
-			var messages []strs.Message
-			err := db.Select(&messages, `SELECT * FROM messages ORDER BY messagesId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-			if err != nil {
-				return c.SendString(help.ShowError(err))
-			}
-			return help.Hrender(PageMessages(messages))
-		case 4:
-			var candidats []strs.JobApplication
-			err := db.Select(&candidats, `SELECT * FROM jobApplications ORDER BY apId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-			if err != nil {
-				return c.SendString(help.ShowError(err))
-			}
-			return help.Hrender(PageCandidats(candidats))
-		case 5:
-			var ratings []strs.Rating
-			err := db.Select(&ratings, `SELECT * FROM ratings ORDER BY ratingId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-			if err != nil {
-				return c.SendString(help.ShowError(err))
-			}
-			return help.Hrender(PageRatings(ratings))
-		case 6:
-			var ratings []strs.Rating
-			err := db.Select(&ratings, `SELECT * FROM ratings ORDER BY ratingId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
-			if err != nil {
-				return c.SendString(help.ShowError(err))
-			}
-			return help.Hrender(PageRatingsUasers(ratings))
-		}
-
-		return c.SendString("")
-	})
+	//app.Post("/paginate", func (c fiber.Ctx) error {
+	//	page:= new(strs.Page)
+	//	if err:=c.Bind().Form(page); err!=nil {
+	//		return c.SendString(help.ShowError(err))
+	//	}
+	//	switch page.Table {
+	//	case 1:
+	//		var projects []strs.Project
+	//		if page.Category == "" {
+	//			err := db.Select(&projects, `SELECT * FROM projects ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+	//			if err != nil {
+	//				return c.SendString(help.ShowError(err))
+	//			}
+	//		} else {
+	//			err := db.Select(&projects, `SELECT * FROM projects WHERE categoryId = ? ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Category, page.Limit, page.Offset) 
+	//			if err != nil {
+	//				return c.SendString(help.ShowError(err))
+	//			}
+	//		}
+	//		return help.Hrender(PageProjects(projects))
+	//	case 2:
+	//		var ratings []strs.Rating
+	//		err := db.Select(&ratings, `SELECT * FROM ratings ORDER BY ratingId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+	//		if err != nil {
+	//			return c.SendString(help.ShowError(err))
+	//		}
+	//		return help.Hrender(PageRatings(ratings))
+	//	}
+	//	return c.SendString("")
+	//})
 
 
 	app.Post("/alpinetest", func(c fiber.Ctx) error {

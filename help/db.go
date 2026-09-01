@@ -2,7 +2,6 @@ package help
 
 import (
 	"log"
-	"os"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 
 // database
 func BasicDb() *sqlx.DB {
-	dsn := os.Getenv("db_url")
+	dsn := "file:data.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
 
 	db, err := sqlx.Connect("sqlite", dsn)
 	if err != nil {

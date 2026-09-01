@@ -10,9 +10,25 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"crow/frontend/mark/comp"
+	"crow/help/strs"
+	"encoding/json"
+	"fmt"
 )
 
-func Candidature() templ.Component {
+// Helper to initialize Alpine state with default levels for all software
+func initSoftLevelsJSON(software []strs.Software) string {
+	m := make(map[string]string)
+	for _, s := range software {
+		m[s.SoftwareName] = "intermédiaire" // Default level
+	}
+	b, err := json.Marshal(m)
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
+}
+
+func Candidature(software []strs.Software) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -37,7 +53,198 @@ func Candidature() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div>candidates page</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"min-h-screen bg-base-200/40 py-10 px-4 sm:px-6 lg:px-8\"><div class=\"max-w-4xl mx-auto space-y-8\"><!-- Header --><div class=\"text-center space-y-2\"><h1 class=\"text-3xl sm:text-4xl font-extrabold text-base-content tracking-tight\">Rejoignez Notre Équipe</h1><p class=\"text-base-content/70 max-w-lg mx-auto text-sm sm:text-base\">Déposez votre candidature en remplissant le formulaire ci-dessous et en indiquant votre niveau de maîtrise sur nos outils.</p></div><!-- Application Form Card -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = form(software).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></main>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func form(software []strs.Software) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"card bg-base-100 shadow-xl border border-base-300 p-6 sm:p-10 relative\" x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf(`{
+            showToast: false,
+            isSubmitting: false,
+            softLevels: %s,
+            get softwareString() {
+                return Object.entries(this.softLevels)
+                    .filter(([name, level]) => level && level.trim() !== '')
+                    .map(([name, level]) => name + ':' + level)
+                    .join(';');
+            }
+        }`, initSoftLevelsJSON(software)))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 57, Col: 41}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" @success.window=\"showToast = true; isSubmitting = false; $refs.applyForm.reset(); setTimeout(() => showToast = false, 5000)\"><!-- Floating Success Toast Notification --><div x-show=\"showToast\" x-cloak x-transition:enter=\"transition ease-out duration-300\" x-transition:enter-start=\"opacity-0 translate-y-2 scale-95\" x-transition:enter-end=\"opacity-100 translate-y-0 scale-100\" x-transition:leave=\"transition ease-in duration-200\" x-transition:leave-start=\"opacity-100 translate-y-0 scale-100\" x-transition:leave-end=\"opacity-0 translate-y-2 scale-95\" class=\"toast toast-top toast-end z-50\"><div class=\"alert alert-success text-white shadow-lg flex items-center gap-2\"><svg class=\"w-5 h-5 stroke-current fill-none shrink-0\" viewBox=\"0 0 24 24\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg> <span class=\"text-sm font-medium\">Votre candidature a été envoyée avec succès !</span></div></div><form x-ref=\"applyForm\" hx-post=\"/apply\" hx-encoding=\"multipart/form-data\" hx-target=\"#applyRes\" hx-swap=\"innerHTML\" @submit=\"isSubmitting = true\" class=\"space-y-6\"><!-- SECTION 1: Personal Details --><div class=\"space-y-4\"><h3 class=\"text-base font-bold text-base-content border-b border-base-200 pb-2\">1. Informations Personnelles</h3><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\"><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Prénom *</span></label> <input type=\"text\" name=\"FirstName\" placeholder=\"ex: Jean\" class=\"input input-bordered w-full focus:input-primary\" required minlength=\"2\" maxlength=\"60\"></div><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Nom *</span></label> <input type=\"text\" name=\"LastName\" placeholder=\"ex: Dupont\" class=\"input input-bordered w-full focus:input-primary\" required minlength=\"2\" maxlength=\"60\"></div></div><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\"><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Email *</span></label> <input type=\"email\" name=\"Email\" placeholder=\"ex: jean.dupont@example.com\" class=\"input input-bordered w-full focus:input-primary\" required maxlength=\"100\"></div><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Objet du poste *</span></label> <input type=\"text\" name=\"Object\" placeholder=\"ex: Architecte d'intérieur / Modeleur BIM\" class=\"input input-bordered w-full focus:input-primary\" required minlength=\"2\" maxlength=\"150\"></div></div><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Message / Motivation *</span></label> <textarea name=\"Message\" placeholder=\"Présentez-vous brièvement et décrivez vos motivations...\" class=\"textarea textarea-bordered w-full h-28 focus:textarea-primary text-sm resize-none\" required minlength=\"5\" maxlength=\"3000\"></textarea></div></div><!-- SECTION 2: Software Skills Matrix -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if len(software) > 0 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"space-y-4 pt-2\"><div class=\"flex items-center justify-between border-b border-base-200 pb-2\"><h3 class=\"text-base font-bold text-base-content\">2. Maîtrise des Logiciels</h3><span class=\"text-xs text-base-content/60\">Sélectionnez votre niveau</span></div><div class=\"grid grid-cols-1 md:grid-cols-2 gap-3\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			for _, s := range software {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"bg-base-200/50 p-3.5 rounded-xl border border-base-200/80 flex flex-col justify-between gap-2.5\"><div class=\"flex items-center justify-between\"><span class=\"font-bold text-sm text-base-content\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(s.SoftwareName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 187, Col: 102}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span> ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if s.Required == 1 {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<span class=\"badge badge-error badge-xs text-white font-medium\">Obligatoire</span>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				} else {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<span class=\"badge badge-ghost badge-xs text-base-content/60 font-medium\">Optionnel</span>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div><!-- 3-Level Radio Button Group --><div class=\"join grid grid-cols-3 w-full bg-base-100 p-0.5 rounded-lg border border-base-300 shadow-2xs\"><!-- Beginner --><label class=\"join-item cursor-pointer text-center py-1 px-1.5 rounded-md transition-colors flex items-center justify-center gap-1\" :class=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var5 string
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q] === 'débutant' ? 'bg-primary text-primary-content font-bold shadow-xs' : 'hover:bg-base-200 text-base-content/70'", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 199, Col: 212}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\"><input type=\"radio\" value=\"débutant\" class=\"hidden\" x-model=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var6 string
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q]", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 204, Col: 99}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"> <span class=\"text-xs\">Débutant</span></label><!-- Intermediate --><label class=\"join-item cursor-pointer text-center py-1 px-1.5 rounded-md transition-colors flex items-center justify-center gap-1\" :class=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var7 string
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q] === 'intermédiaire' ? 'bg-primary text-primary-content font-bold shadow-xs' : 'hover:bg-base-200 text-base-content/70'", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 211, Col: 217}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"><input type=\"radio\" value=\"intermédiaire\" class=\"hidden\" x-model=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var8 string
+				templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q]", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 216, Col: 99}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"> <span class=\"text-xs\">Intermédiaire</span></label><!-- Expert --><label class=\"join-item cursor-pointer text-center py-1 px-1.5 rounded-md transition-colors flex items-center justify-center gap-1\" :class=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var9 string
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q] === 'expert' ? 'bg-primary text-primary-content font-bold shadow-xs' : 'hover:bg-base-200 text-base-content/70'", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 223, Col: 209}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var9)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><input type=\"radio\" value=\"expert\" class=\"hidden\" x-model=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var10 string
+				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("softLevels[%q]", s.SoftwareName))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/pages/candidature.templ`, Line: 228, Col: 99}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"> <span class=\"text-xs\">Expert</span></label></div></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div><!-- Hidden Input holding formatted string e.g. \"AutoCAD:intermédiaire;Revit:expert\" --><input type=\"hidden\" name=\"Software\" :value=\"softwareString\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<!-- Default empty fallback if no software defined in DB --> <input type=\"hidden\" name=\"Software\" value=\"Non renseigné\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<!-- SECTION 3: Attachments (CV & Cover Letter) --><div class=\"space-y-4 pt-2\"><h3 class=\"text-base font-bold text-base-content border-b border-base-200 pb-2\">3. Pièces Jointes (Format PDF)</h3><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\"><!-- CV File Input --><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Curriculum Vitae (CV) *</span></label> <input type=\"file\" name=\"cv\" accept=\".pdf,application/pdf\" class=\"file-input file-input-bordered file-input-primary w-full file-input-sm sm:file-input-md\" required> <label class=\"label pt-1\"><span class=\"label-text-alt text-base-content/50\">Fichier PDF uniquement (max 10MB)</span></label></div><!-- Motivation Letter File Input --><div class=\"form-control w-full\"><label class=\"label pb-1\"><span class=\"label-text font-medium text-xs uppercase tracking-wider text-base-content/70\">Lettre de Motivation *</span></label> <input type=\"file\" name=\"letter\" accept=\".pdf,application/pdf\" class=\"file-input file-input-bordered file-input-primary w-full file-input-sm sm:file-input-md\" required> <label class=\"label pt-1\"><span class=\"label-text-alt text-base-content/50\">Fichier PDF uniquement (max 10MB)</span></label></div></div></div><!-- Submit Button --><div class=\"pt-4\"><button type=\"submit\" class=\"btn btn-primary w-full shadow-md gap-2\" :disabled=\"isSubmitting\"><span x-show=\"isSubmitting\" class=\"loading loading-spinner loading-xs\"></span> <svg x-show=\"!isSubmitting\" class=\"w-4 h-4 stroke-current fill-none\" viewBox=\"0 0 24 24\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 19l9 2-9-18-9 18 9-2zm0 0v-8\"></path></svg> <span x-text=\"isSubmitting ? 'Transmission en cours...' : 'Envoyer ma candidature'\"></span></button></div></form><div id=\"applyRes\" class=\"text-error font-medium text-xs text-center mt-3\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -2,10 +2,273 @@ package comp
 
 import (
     "crow/help/strs"
+    "fmt"
+    "strings"
 )
 
-templ CandidatsMod(user *strs.User){
-    <div>
-        view candidats
+func isCandidatSeen(candidatId int, notSeen []strs.CanNot) (bool, int) {
+    for _, n := range notSeen {
+        if n.CandidatId == candidatId {
+            return false, n.CanNotId
+        }
+    }
+    return true, 0
+}
+
+templ CandidatsMod(user *strs.User, candidats []strs.JobApplication, notSeen []strs.CanNot) {
+    <div class="w-full max-w-4xl mx-auto space-y-3 p-4">
+        if len(candidats) == 0 {
+            <div class="card bg-base-100 border border-base-300 p-8 text-center text-base-content/60 rounded-2xl">
+                <p class="font-medium text-sm">Aucune candidature reçue pour le moment.</p>
+            </div>
+        } else {
+            for i, c := range candidats {
+                {{ seen, notId := isCandidatSeen(c.ApId, notSeen) }}
+                if seen {
+                    @SeenCandidatAccordion(c, i == 0)
+                } else {
+                    @NotifCandidatAccordion(c, notId, i == 0)
+                }
+            }
+        }
+    </div>
+}
+
+// Unread Candidate Application (Highlighted Primary Color Border)
+templ NotifCandidatAccordion(c strs.JobApplication, notId int, isFirst bool) {
+    <div 
+        x-data="{ isRead: false }" 
+        class="collapse collapse-arrow bg-base-100 border-2 shadow-sm rounded-box transition-all" 
+        :class="isRead ? 'border-base-300' : 'border-primary'"
+    >
+        if isFirst {
+            <input type="radio" name="candidats-accordion" checked="checked" />
+        } else {
+            <input type="radio" name="candidats-accordion" />
+        }
+        
+        <!-- Header / Title -->
+        <div class="collapse-title font-semibold flex items-center justify-between pr-10 py-3.5" :class="isRead ? '' : 'text-primary'">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span x-show="!isRead" class="badge badge-primary badge-sm">Nouveau</span>
+                <span x-show="isRead" x-cloak class="badge badge-ghost badge-sm">Lu</span>
+                <span class="text-base-content font-bold">{ c.FirstName } { c.LastName }</span>
+                <span class="text-xs text-base-content/60 font-normal">({ c.Email })</span>
+            </div>
+            <span class="text-sm font-normal text-base-content/80 truncate max-w-xs">{ c.Object }</span>
+        </div>
+
+        <!-- Content -->
+        <div class="collapse-content text-sm space-y-4 pt-1 border-t border-base-200">
+            <!-- Motivation Message -->
+            <div class="pt-2">
+                <p class="font-semibold mb-1 text-base-content">Poste ciblé : { c.Object }</p>
+                <div class="bg-base-200/50 p-3.5 rounded-xl border border-base-200">
+                    <p class="whitespace-pre-wrap leading-relaxed text-base-content/90">{ c.Message }</p>
+                </div>
+            </div>
+
+            <!-- Software Skills -->
+            if c.Software != "" {
+                <div class="space-y-1.5">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">Logiciels maîtrisés :</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        for _, item := range strings.Split(c.Software, ";") {
+                            if item != "" {
+                                <span class="badge badge-outline badge-primary badge-sm py-2 text-xs">
+                                    { item }
+                                </span>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- PDF Attachments (CV & Letter) -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                if c.CvPath != "" {
+                    <a 
+                        href={ templ.SafeURL("/" + c.CvPath) } 
+                        target="_blank" 
+                        class="btn btn-xs sm:btn-sm btn-outline btn-primary gap-1.5"
+                    >
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <span>Voir CV (PDF)</span>
+                    </a>
+                }
+                if c.LetterPath != "" {
+                    <a 
+                        href={ templ.SafeURL("/" + c.LetterPath) } 
+                        target="_blank" 
+                        class="btn btn-xs sm:btn-sm btn-outline btn-secondary gap-1.5"
+                    >
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span>Lettre de Motivation (PDF)</span>
+                    </a>
+                }
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end items-center gap-2 pt-2 border-t border-base-200/60">
+                <!-- Clear Notification Button -->
+                <button
+                    x-show="!isRead"
+                    hx-post="/viewApply"
+                    hx-vals={ fmt.Sprintf(`{"notifId": "%d"}`, notId) }
+                    hx-target="this"
+                    hx-target-error="#res"
+                    hx-swap="none"
+                    @click="isRead = true"
+                    class="btn btn-secondary btn-sm"
+                >
+                    Effacer la notification
+                </button>
+
+                <!-- Two-Stage Delete Candidate Button -->
+                <div x-data="{ confirm: false }">
+                    <button
+                        type="button"
+                        x-show="!confirm"
+                        @click="confirm = true"
+                        class="btn btn-error btn-sm"
+                    >
+                        Supprimer la candidature
+                    </button>
+
+                    <button
+                        type="button"
+                        x-show="confirm"
+                        x-cloak
+                        @click="confirm = false"
+                        hx-post="/deleteApply"
+                        hx-vals={ fmt.Sprintf(`{"applyid": "%d", "cv": %q, "letter": %q}`, c.ApId, c.CvPath, c.LetterPath) }
+                        hx-target="closest .collapse"
+                        hx-target-error="#res"
+                        hx-swap="delete"
+                        class="btn btn-accent btn-sm animate-pulse font-bold"
+                    >
+                        Confirmer la suppression ?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+// Read Candidate Application (Standard Border)
+templ SeenCandidatAccordion(c strs.JobApplication, isFirst bool) {
+    <div class="collapse collapse-arrow bg-base-100 border border-base-300 shadow-sm rounded-box">
+        if isFirst {
+            <input type="radio" name="candidats-accordion" checked="checked" />
+        } else {
+            <input type="radio" name="candidats-accordion" />
+        }
+        
+        <!-- Header / Title -->
+        <div class="collapse-title font-semibold flex items-center justify-between pr-10 py-3.5">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="badge badge-ghost badge-sm">Lu</span>
+                <span class="font-bold">{ c.FirstName } { c.LastName }</span>
+                <span class="text-xs text-base-content/60 font-normal">({ c.Email })</span>
+            </div>
+            <span class="text-sm font-normal text-base-content/80 truncate max-w-xs">{ c.Object }</span>
+        </div>
+
+        <!-- Content -->
+        <div class="collapse-content text-sm space-y-4 pt-1 border-t border-base-200">
+            <!-- Motivation Message -->
+            <div class="pt-2">
+                <p class="font-semibold mb-1 text-base-content">Poste ciblé : { c.Object }</p>
+                <div class="bg-base-200/50 p-3.5 rounded-xl border border-base-200">
+                    <p class="whitespace-pre-wrap leading-relaxed text-base-content/80">{ c.Message }</p>
+                </div>
+            </div>
+
+            <!-- Software Skills -->
+            if c.Software != "" {
+                <div class="space-y-1.5">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">Logiciels maîtrisés :</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        for _, item := range strings.Split(c.Software, ";") {
+                            if item != "" {
+                                <span class="badge badge-outline badge-primary badge-sm py-2 text-xs">
+                                    { item }
+                                </span>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- PDF Attachments (CV & Letter) -->
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                if c.CvPath != "" {
+                    <a 
+                        href={ templ.SafeURL("/" + c.CvPath) } 
+                        target="_blank" 
+                        class="btn btn-xs sm:btn-sm btn-outline btn-primary gap-1.5"
+                    >
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <span>Voir CV (PDF)</span>
+                    </a>
+                }
+                if c.LetterPath != "" {
+                    <a 
+                        href={ templ.SafeURL("/" + c.LetterPath) } 
+                        target="_blank" 
+                        class="btn btn-xs sm:btn-sm btn-outline btn-secondary gap-1.5"
+                    >
+                        <svg class="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span>Lettre de Motivation (PDF)</span>
+                    </a>
+                }
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end items-center gap-2 pt-2 border-t border-base-200/60">
+                <!-- Two-Stage Delete Candidate Button -->
+                <div x-data="{ confirm: false }">
+                    <button
+                        type="button"
+                        x-show="!confirm"
+                        @click="confirm = true"
+                        class="btn btn-error btn-outline btn-sm"
+                    >
+                        Supprimer la candidature
+                    </button>
+
+                    <button
+                        type="button"
+                        x-show="confirm"
+                        x-cloak
+                        @click="confirm = false"
+                        hx-post="/deleteApply"
+                        hx-vals={ fmt.Sprintf(`{"applyid": "%d", "cv": %q, "letter": %q}`, c.ApId, c.CvPath, c.LetterPath) }
+                        hx-target="closest .collapse"
+                        hx-target-error="#res"
+                        hx-swap="delete"
+                        class="btn btn-accent btn-sm animate-pulse font-bold"
+                    >
+                        Confirmer la suppression ?
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 }

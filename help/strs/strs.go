@@ -89,17 +89,17 @@ type Message struct {
 }
 
 type JobApplication struct {
-	ApId      int    `db:"apId"      form:"ApId"`
-	FirstName string `db:"firstName" form:"FirstName" validate:"required,min=2,max=60"`
-	LastName  string `db:"lastName"  form:"LastName"  validate:"required,min=2,max=60"`
-	Email     string `db:"email"     form:"Email"     validate:"required,email,max=100"`
-	Object    string `db:"object"    form:"Object"    validate:"required,min=2,max=150"`
-	Message   string `db:"message"   form:"Message"   validate:"required,min=5,max=3000"`
-	Software  string `db:"software"  form:"Software"  validate:"required,min=5,max=3000"`
-	Cv        *multipart.FileHeader `form:"cv"`
-	CvPath    string             
-	Letter    *multipart.FileHeader `form:"letter"`
-	LetterPath string
+	ApId       int                   `db:"apId"       form:"ApId"`
+	FirstName  string                `db:"firstName"  form:"FirstName" validate:"required,min=2,max=60"`
+	LastName   string                `db:"lastName"   form:"LastName"  validate:"required,min=2,max=60"`
+	Email      string                `db:"email"      form:"Email"     validate:"required,email,max=100"`
+	Object     string                `db:"object"     form:"Object"    validate:"required,min=2,max=150"`
+	Message    string                `db:"message"    form:"Message"   validate:"required,min=5,max=3000"`
+	Software   string                `db:"software"   form:"Software"  validate:"required,min=5,max=3000"`
+	Cv         *multipart.FileHeader `db:"-"          form:"cv"`
+	CvPath     string                `db:"cv"         form:"-"`
+	Letter     *multipart.FileHeader `db:"-"          form:"letter"`
+	LetterPath string                `db:"letter"     form:"-"`
 }
 
 type Partenair struct {
