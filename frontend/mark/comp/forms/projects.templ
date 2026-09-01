@@ -231,6 +231,7 @@ templ Projects(categories []strs.Category, projects []strs.Project) {
                                 </span>
 
                                 <img
+                                    loading="lazy"
 
                                     src={ v.MImagePath }
 
@@ -257,6 +258,7 @@ templ Projects(categories []strs.Category, projects []strs.Project) {
                                         </span>
 
                                         <img
+                                            loading="lazy"
 
                                             :src="preview"
 
@@ -381,6 +383,7 @@ templ Projects(categories []strs.Category, projects []strs.Project) {
                                     >
 
                                         <img
+                                            loading="lazy"
 
                                             src={ path }
 
@@ -533,6 +536,7 @@ templ Projects(categories []strs.Category, projects []strs.Project) {
                                         <div class="relative group">
 
                                             <img
+                                                loading="lazy"
 
                                                 :src="image.preview"
 
@@ -682,5 +686,9 @@ templ Projects(categories []strs.Category, projects []strs.Project) {
         </div>
 
     }
+
+    <form action="">
+        <input type="number" >
+    </form>
 
 }

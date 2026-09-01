@@ -160,20 +160,20 @@ func Projects(categories []strs.Category, projects []strs.Project) templ.Compone
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</textarea></label></div><div class=\"divider\"></div><!-- ==================== --><!-- IMAGE PRINCIPALE --><!-- ==================== --><div><h3 class=\"text-lg font-semibold\">Image principale</h3><p class=\"text-sm opacity-60 mb-4\">Laissez ce champ vide si vous souhaitez conserver l'image principale actuelle.</p><div class=\"flex flex-col sm:flex-row gap-6 items-start\"><!-- Image actuelle --><div class=\"flex flex-col items-center gap-2\"><span class=\"text-xs font-semibold uppercase opacity-60\" x-show=\"!preview\">Actuelle</span> <img src=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</textarea></label></div><div class=\"divider\"></div><!-- ==================== --><!-- IMAGE PRINCIPALE --><!-- ==================== --><div><h3 class=\"text-lg font-semibold\">Image principale</h3><p class=\"text-sm opacity-60 mb-4\">Laissez ce champ vide si vous souhaitez conserver l'image principale actuelle.</p><div class=\"flex flex-col sm:flex-row gap-6 items-start\"><!-- Image actuelle --><div class=\"flex flex-col items-center gap-2\"><span class=\"text-xs font-semibold uppercase opacity-60\" x-show=\"!preview\">Actuelle</span> <img loading=\"lazy\" src=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.ResolveAttributeValue(v.MImagePath)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 235, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 236, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" class=\"w-40 h-40 object-cover rounded-xl border border-base-300\" alt=\"Image principale actuelle\" x-show=\"!preview\"><!-- Aperçu de la nouvelle image --><template x-if=\"preview\"><div class=\"flex flex-col items-center gap-2\"><span class=\"text-xs font-semibold uppercase text-primary\">Nouvelle image</span> <img :src=\"preview\" class=\"w-40 h-40 object-cover rounded-xl border-2 border-primary\" alt=\"Nouvelle image principale\"></div></template></div><!-- Champ de l'image principale --><div class=\"flex-1 w-full\"><label class=\"form-control\"><div class=\"label\"><span class=\"label-text font-medium\">Remplacer l'image principale</span></div><input type=\"file\" name=\"MImage\" accept=\"image/*\" class=\"file-input file-input-bordered w-full\" @change=\"\n\n                                            preview = $event.target.files[0]\n\n                                                ? URL.createObjectURL($event.target.files[0])\n\n                                                : null\n\n                                        \"></label></div></div></div><div class=\"divider\"></div><!-- ==================== --><!-- IMAGES ACTUELLES --><!-- ==================== --><div><div class=\"flex items-center justify-between mb-1\"><h3 class=\"text-lg font-semibold\">Images actuelles</h3><span class=\"badge badge-neutral\" x-text=\"paths.length + ' images'\"></span></div><p class=\"text-sm opacity-60 mb-4\">Ces images sont déjà enregistrées dans le projet. Supprimez celles que vous ne souhaitez plus conserver.</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" class=\"w-40 h-40 object-cover rounded-xl border border-base-300\" alt=\"Image principale actuelle\" x-show=\"!preview\"><!-- Aperçu de la nouvelle image --><template x-if=\"preview\"><div class=\"flex flex-col items-center gap-2\"><span class=\"text-xs font-semibold uppercase text-primary\">Nouvelle image</span> <img loading=\"lazy\" :src=\"preview\" class=\"w-40 h-40 object-cover rounded-xl border-2 border-primary\" alt=\"Nouvelle image principale\"></div></template></div><!-- Champ de l'image principale --><div class=\"flex-1 w-full\"><label class=\"form-control\"><div class=\"label\"><span class=\"label-text font-medium\">Remplacer l'image principale</span></div><input type=\"file\" name=\"MImage\" accept=\"image/*\" class=\"file-input file-input-bordered w-full\" @change=\"\n\n                                            preview = $event.target.files[0]\n\n                                                ? URL.createObjectURL($event.target.files[0])\n\n                                                : null\n\n                                        \"></label></div></div></div><div class=\"divider\"></div><!-- ==================== --><!-- IMAGES ACTUELLES --><!-- ==================== --><div><div class=\"flex items-center justify-between mb-1\"><h3 class=\"text-lg font-semibold\">Images actuelles</h3><span class=\"badge badge-neutral\" x-text=\"paths.length + ' images'\"></span></div><p class=\"text-sm opacity-60 mb-4\">Ces images sont déjà enregistrées dans le projet. Supprimez celles que vous ne souhaitez plus conserver.</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -186,20 +186,20 @@ func Projects(categories []strs.Category, projects []strs.Project) templ.Compone
 					var templ_7745c5c3_Var11 string
 					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf(`{ path: %q }`, path))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 377, Col: 82}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 379, Col: 82}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" x-show=\"paths.includes(path)\"><img src=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\" x-show=\"paths.includes(path)\"><img loading=\"lazy\" src=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var12 string
 					templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.ResolveAttributeValue(path)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 385, Col: 54}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 388, Col: 54}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 					if templ_7745c5c3_Err != nil {
@@ -211,14 +211,14 @@ func Projects(categories []strs.Category, projects []strs.Project) templ.Compone
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></div><div class=\"divider\"></div><!-- ==================== --><!-- AJOUTER DE NOUVELLES IMAGES --><!-- ==================== --><div><h3 class=\"text-lg font-semibold\">Ajouter des images</h3><p class=\"text-sm opacity-60 mb-4\">Vous pouvez sélectionner des images plusieurs fois. Les nouvelles sélections seront ajoutées aux précédentes.</p><input x-ref=\"imageInput\" type=\"file\" name=\"Images\" accept=\"image/*\" multiple class=\"file-input file-input-bordered w-full\" @change=\"\n\n                                Array.from($event.target.files).forEach(file => {\n\n                                    images.push({\n\n                                        file: file,\n\n                                        preview: URL.createObjectURL(file)\n\n                                    });\n\n                                });\n\n                                const dt = new DataTransfer();\n\n                                images.forEach(image => {\n\n                                    dt.items.add(image.file);\n\n                                });\n\n                                $refs.imageInput.files = dt.files;\n\n                            \"><!-- Aperçu des nouvelles images --><template x-if=\"images.length > 0\"><div class=\"mt-5\"><div class=\"flex items-center gap-2 mb-3\"><span class=\"font-medium\">Nouvelles images</span> <span class=\"badge badge-primary\" x-text=\"images.length\"></span></div><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4\"><template x-for=\"(image, index) in images\" :key=\"index\"><div class=\"relative group\"><img :src=\"image.preview\" class=\"w-full aspect-square object-cover rounded-xl border-2 border-primary\" alt=\"Aperçu de la nouvelle image\"> <span class=\"badge badge-primary absolute top-2 left-2\">Nouveau</span> <button type=\"button\" class=\"btn btn-error btn-sm absolute top-2 right-2\" @click=\"\n\n                                                    URL.revokeObjectURL(image.preview);\n\n                                                    images.splice(index, 1);\n\n                                                    const dt = new DataTransfer();\n\n                                                    images.forEach(image => {\n\n                                                        dt.items.add(image.file);\n\n                                                    });\n\n                                                    $refs.imageInput.files = dt.files;\n\n                                                \">Supprimer</button></div></template></div></div></template></div><!-- ==================== --><!-- CHEMINS DES IMAGES --><!-- ==================== --><input type=\"hidden\" name=\"ImagePaths\" :value=\"paths.join(';')\"><!-- ==================== --><!-- ENREGISTRER --><!-- ==================== --><div class=\"flex justify-end pt-2\"><button type=\"submit\" class=\"btn btn-neutral px-8\">Enregistrer les modifications</button></div></form><div class=\"pt-4 border-t border-base-200 flex justify-end\"><div x-data=\"{ confirm: false }\"><button type=\"button\" x-show=\"!confirm\" @click=\"confirm = true\" class=\"btn btn-error btn-outline btn-sm\">Supprimer le projet</button> <button type=\"button\" x-show=\"confirm\" x-cloak @click=\"confirm = false\" hx-post=\"/deleteProject\" hx-vals=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></div><div class=\"divider\"></div><!-- ==================== --><!-- AJOUTER DE NOUVELLES IMAGES --><!-- ==================== --><div><h3 class=\"text-lg font-semibold\">Ajouter des images</h3><p class=\"text-sm opacity-60 mb-4\">Vous pouvez sélectionner des images plusieurs fois. Les nouvelles sélections seront ajoutées aux précédentes.</p><input x-ref=\"imageInput\" type=\"file\" name=\"Images\" accept=\"image/*\" multiple class=\"file-input file-input-bordered w-full\" @change=\"\n\n                                Array.from($event.target.files).forEach(file => {\n\n                                    images.push({\n\n                                        file: file,\n\n                                        preview: URL.createObjectURL(file)\n\n                                    });\n\n                                });\n\n                                const dt = new DataTransfer();\n\n                                images.forEach(image => {\n\n                                    dt.items.add(image.file);\n\n                                });\n\n                                $refs.imageInput.files = dt.files;\n\n                            \"><!-- Aperçu des nouvelles images --><template x-if=\"images.length > 0\"><div class=\"mt-5\"><div class=\"flex items-center gap-2 mb-3\"><span class=\"font-medium\">Nouvelles images</span> <span class=\"badge badge-primary\" x-text=\"images.length\"></span></div><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4\"><template x-for=\"(image, index) in images\" :key=\"index\"><div class=\"relative group\"><img loading=\"lazy\" :src=\"image.preview\" class=\"w-full aspect-square object-cover rounded-xl border-2 border-primary\" alt=\"Aperçu de la nouvelle image\"> <span class=\"badge badge-primary absolute top-2 left-2\">Nouveau</span> <button type=\"button\" class=\"btn btn-error btn-sm absolute top-2 right-2\" @click=\"\n\n                                                    URL.revokeObjectURL(image.preview);\n\n                                                    images.splice(index, 1);\n\n                                                    const dt = new DataTransfer();\n\n                                                    images.forEach(image => {\n\n                                                        dt.items.add(image.file);\n\n                                                    });\n\n                                                    $refs.imageInput.files = dt.files;\n\n                                                \">Supprimer</button></div></template></div></div></template></div><!-- ==================== --><!-- CHEMINS DES IMAGES --><!-- ==================== --><input type=\"hidden\" name=\"ImagePaths\" :value=\"paths.join(';')\"><!-- ==================== --><!-- ENREGISTRER --><!-- ==================== --><div class=\"flex justify-end pt-2\"><button type=\"submit\" class=\"btn btn-neutral px-8\">Enregistrer les modifications</button></div></form><div class=\"pt-4 border-t border-base-200 flex justify-end\"><div x-data=\"{ confirm: false }\"><button type=\"button\" x-show=\"!confirm\" @click=\"confirm = true\" class=\"btn btn-error btn-outline btn-sm\">Supprimer le projet</button> <button type=\"button\" x-show=\"confirm\" x-cloak @click=\"confirm = false\" hx-post=\"/deleteProject\" hx-vals=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf(`{"projectId": "%d"}`, v.ProjectId))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 659, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/projects.templ`, Line: 663, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
 			if templ_7745c5c3_Err != nil {
@@ -228,6 +228,10 @@ func Projects(categories []strs.Category, projects []strs.Project) templ.Compone
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<form action=\"\"><input type=\"number\"></form>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
 		}
 		return nil
 	})

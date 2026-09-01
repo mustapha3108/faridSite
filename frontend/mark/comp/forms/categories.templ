@@ -27,7 +27,7 @@ templ categoryAccordion(c strs.Category, isFirst bool) {
                 <div class="avatar">
                     <div class="w-16 h-16 rounded-xl overflow-hidden border border-base-300 shadow-sm shrink-0">
                         if c.ImagePath != "" {
-                            <img src={ c.ImagePath } alt={ c.CategoryName } class="object-cover w-full h-full" />
+                            <img loading="lazy" src={ c.ImagePath } alt={ c.CategoryName } class="object-cover w-full h-full" />
                         } else {
                             <div class="bg-neutral text-neutral-content flex items-center justify-center w-full h-full">
                                 <span class="text-xl uppercase font-bold">{ c.CategoryName[:1] }</span>

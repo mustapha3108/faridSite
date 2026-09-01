@@ -5,7 +5,9 @@ import (
     "crow/frontend/mark/comp/forms"
 )
 
-templ ProjetsMod(user *strs.User, categories []strs.Category, projects []strs.Project){
+
+templ PartenairsMod(user *strs.User, partenairs []strs.Partenair) {
+
     <div class="w-full max-w-4xl mx-auto self-start min-h-screen">
         <div class="tabs tabs-border w-full">
 
@@ -13,23 +15,23 @@ templ ProjetsMod(user *strs.User, categories []strs.Category, projects []strs.Pr
                 type="radio"
                 name="my_tabs_2"
                 class="tab"
-                aria-label="Créer un Projet"
+                aria-label="Ajouter un Partenaire"
             />
 
             <div class="tab-content border-base-300 bg-base-100 p-6 md:p-10">
-                @forms.CreateProject(user, categories)
+                @forms.CreatePartenair()
             </div>
 
             <input
                 type="radio"
                 name="my_tabs_2"
                 class="tab"
-                aria-label="Projets"
+                aria-label="Partenaires"
                 checked="checked"
             />
 
             <div class="tab-content border-base-300 bg-base-100 p-6 md:p-10">
-                @forms.Projects(categories, projects)
+                @forms.Partenairs(partenairs)
             </div>
 
         </div>

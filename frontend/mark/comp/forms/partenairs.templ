@@ -1,0 +1,66 @@
+package forms
+
+import (
+	"crow/help/strs"
+	"fmt"
+)
+
+templ Partenairs(partenairs []strs.Partenair) {
+	<!-- Added a responsive grid so the cards sit nicely next to each other -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+		
+		for _, v := range partenairs {
+			<!-- Converted to a DaisyUI Card -->
+			<div class="partner-card card bg-base-100 shadow-sm border border-base-200 hover:shadow-md transition-shadow">
+				
+				<!-- Image Container: Fixed height, centered content, object-contain for logos -->
+				<figure class="px-4 pt-4 h-36 flex items-center justify-center m-2 rounded-2xl bg-base-200/30">
+					<img 
+						src={v.ImagePath} 
+						alt={v.PartenairName} 
+						loading="lazy"
+						class="max-h-full max-w-full object-contain drop-shadow-sm"
+					/>
+				</figure>
+
+				<div class="card-body items-center text-center p-4">
+					
+					<h2 class="card-title text-lg mb-2 text-base-content">
+						{v.PartenairName}
+					</h2>
+				
+					<!-- Card Actions wrapper forces buttons to the bottom -->
+					<div class="card-actions w-full mt-auto" x-data="{ confirm: false }">
+						
+						<!-- Button 1: Initiate Delete -->
+						<button
+							type="button"
+							x-show="!confirm"
+							@click="confirm = true"
+							class="btn btn-error btn-outline btn-sm w-full"
+						>
+							Supprimer
+						</button>
+				
+						<!-- Button 2: Confirm Delete -->
+						<button
+							type="button"
+							x-show="confirm"
+							x-cloak
+							hx-post="/deletePartenair"
+							hx-vals={ fmt.Sprintf(`{"partenairId": "%d"}`, v.PartenairID) }
+							hx-target="closest .partner-card" 
+							hx-swap="delete"
+							class="btn btn-error btn-sm w-full animate-pulse font-bold"
+							@click.outside="confirm = false"
+						>
+							Confirmer ?
+						</button>
+						
+					</div>
+				</div>
+			</div>
+		}
+
+	</div>
+}

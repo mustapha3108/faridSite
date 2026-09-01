@@ -1,0 +1,133 @@
+package forms
+
+/*
+type Partenair struct {
+    PartenairID   int64                 `db:"partenairId"   form:"PartenairId"`
+    PartenairName string                `db:"partenairName" form:"PartenairName" validate:"required,min=2,max=100"`
+    ImagePath     string                `db:"imagePath"     form:"ImagePath"`
+    PartenairImg  *multipart.FileHeader `db:"-"             form:"PartenairImg"  validate:"required"`
+}
+*/
+
+templ CreatePartenair() {
+	<form
+		class="card bg-base-200 border border-base-300 shadow-xl w-full max-w-lg mx-auto"
+		hx-post="/uploadPartenair"
+		hx-target="#partenair-res"
+		hx-swap="innerHTML"
+		hx-encoding="multipart/form-data"
+		x-data="{ preview: null }"
+	>
+		<div class="card-body gap-6">
+
+			<div>
+				<h2 class="card-title text-2xl">
+					Ajouter un partenaire
+				</h2>
+				<p class="text-sm opacity-60">
+					Saisissez le nom et le logo du partenaire.
+				</p>
+			</div>
+
+			<div class="divider my-0"></div>
+
+			<!-- ============================== -->
+			<!-- PARTNER NAME -->
+			<!-- ============================== -->
+
+			<label class="form-control w-full">
+				<div class="label">
+					<span class="label-text font-medium">
+						Nom du partenaire
+					</span>
+				</div>
+				<input
+					type="text"
+					name="PartenairName"
+					class="input input-bordered w-full"
+					placeholder="Ex: Entreprise XYZ"
+					minlength="2"
+					maxlength="100"
+					required
+				/>
+			</label>
+
+			<!-- ============================== -->
+			<!-- IMAGE UPLOAD & PREVIEW -->
+			<!-- ============================== -->
+
+			<div class="form-control w-full">
+				<div class="label">
+					<span class="label-text font-medium">
+						Logo / Image
+					</span>
+					<span class="badge badge-neutral badge-sm">Requis</span>
+				</div>
+
+				<div class="flex flex-col sm:flex-row gap-5 items-center mt-2">
+
+					<!-- Preview Avatar -->
+					<div
+						class="w-24 h-24 rounded-box bg-base-100 border border-base-300 flex items-center justify-center overflow-hidden shrink-0 shadow-inner"
+					>
+						<template x-if="preview">
+							<img
+								:src="preview"
+								class="w-full h-full object-cover"
+								alt="Aperçu du logo"
+							/>
+						</template>
+
+						<template x-if="!preview">
+							<div class="text-center opacity-40">
+								<div class="text-3xl">🏢</div>
+							</div>
+						</template>
+					</div>
+
+					<!-- File Input -->
+					<div class="flex-1 w-full">
+						<input
+							type="file"
+							name="PartenairImg"
+							accept="image/*"
+							class="file-input file-input-bordered w-full"
+							required
+							@change="
+								if ($event.target.files[0]) {
+									preview = URL.createObjectURL($event.target.files[0])
+								} else {
+									preview = null
+								}
+							"
+						/>
+						<div class="label">
+							<span class="label-text-alt opacity-60">
+								Format accepté: JPG, PNG, WEBP
+							</span>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="divider my-0"></div>
+
+			<!-- ============================== -->
+			<!-- SUBMIT -->
+			<!-- ============================== -->
+
+			<div class="card-actions justify-end">
+				<button
+					type="submit"
+					class="btn btn-neutral"
+				>
+					Ajouter le partenaire
+				</button>
+			</div>
+
+		</div>
+	</form>
+
+	<div id="partenair-res" class="text-center mt-4"></div>
+}

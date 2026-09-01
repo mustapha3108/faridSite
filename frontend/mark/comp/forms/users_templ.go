@@ -40,7 +40,7 @@ func Users(users []strs.User) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for i, u := range users {
-			if u.UserId != 1 && u.UserId != 2 {
+			if u.UserId != 2 {
 				templ_7745c5c3_Err = userAccordion(u, i == 0).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -146,33 +146,53 @@ func userAccordion(u strs.User, isFirst bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" class=\"input input-bordered input-sm w-full\" required minlength=\"3\" maxlength=\"50\"></div><!-- Access Rights (cmd) --><div class=\"form-control w-full\"><label class=\"label pb-1.5\"><span class=\"label-text font-medium\">Droits d'accès</span></label><div class=\"flex flex-col md:flex-row gap-3 flex-wrap justify-around bg-base-200 p-3 rounded-lg\"><label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"c\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Créer (c)</span></label> <label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"m\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Modifier (m)</span></label> <label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"d\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Supprimer (d)</span></label></div><input type=\"hidden\" name=\"Access\" :value=\"accessString\"></div><div class=\"flex justify-end pt-1\"><button type=\"submit\" class=\"btn btn-primary btn-sm\">Mettre à jour le profil</button></div></form><div class=\"divider my-0\">Changer le mot de passe</div><!-- SECTION 2: Update Password with 12-char limit warning --><form hx-post=\"/updateUserPassword\" hx-target-error=\"#res\" hx-swap=\"none\" x-data=\"{ pass: '' }\" @htmx:after-request=\"if (detail.successful) { pass = ''; }\" class=\"space-y-4\"><input type=\"hidden\" name=\"UserId\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\" class=\"input input-bordered input-sm w-full\" required minlength=\"3\" maxlength=\"50\"></div><!-- Access Rights (cmd) -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if u.UserId != 1 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"form-control w-full\"><label class=\"label pb-1.5\"><span class=\"label-text font-medium\">Droits d'accès</span></label><div class=\"flex flex-col md:flex-row gap-3 flex-wrap justify-around bg-base-200 p-3 rounded-lg\"><label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"c\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Créer (c)</span></label> <label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"m\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Modifier (m)</span></label> <label class=\"label cursor-pointer justify-start gap-2\"><input type=\"checkbox\" value=\"d\" x-model=\"roles\" class=\"checkbox checkbox-primary checkbox-sm\"> <span class=\"label-text\">Supprimer (d)</span></label></div><input type=\"hidden\" name=\"Access\" :value=\"accessString\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"flex justify-end pt-1\"><button type=\"submit\" class=\"btn btn-primary btn-sm\">Mettre à jour le profil</button></div></form><div class=\"divider my-0\">Changer le mot de passe</div><!-- SECTION 2: Update Password with 12-char limit warning --><form hx-post=\"/updateUserPassword\" hx-target-error=\"#res\" hx-swap=\"none\" x-data=\"{ pass: '' }\" @htmx:after-request=\"if (detail.successful) { pass = ''; }\" class=\"space-y-4\"><input type=\"hidden\" name=\"UserId\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf("%d", u.UserId))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/users.templ`, Line: 124, Col: 86}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/users.templ`, Line: 126, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\"><div class=\"form-control w-full\"><label class=\"label pb-1.5\"><span class=\"label-text font-medium my-3 text-xs md:text-sm\">Nouveau mot de passe (6-12 caractères)</span></label><div class=\"flex flex-col md:flex-row items-center gap-3\"><input type=\"password\" name=\"Password\" x-model=\"pass\" placeholder=\"••••••••\" class=\"input input-bordered input-sm grow\" required minlength=\"6\" maxlength=\"12\"> <button type=\"submit\" class=\"btn btn-neutral btn-outline btn-sm shrink-0\">Modifier le mot de passe</button></div><div x-show=\"pass.length >= 12\" x-cloak class=\"label pb-0 pt-1\"><span class=\"label-text-alt text-warning font-medium\">⚠️ Limite maximale de 12 caractères atteinte</span></div></div></form><!-- SECTION 3: Account Deletion --><div class=\"pt-4 border-t border-base-200 flex justify-end\"><div x-data=\"{ confirm: false }\"><button type=\"button\" x-show=\"!confirm\" @click=\"confirm = true\" class=\"btn btn-error btn-outline btn-sm\">Supprimer le compte</button> <button type=\"button\" x-show=\"confirm\" x-cloak @click=\"confirm = false\" hx-post=\"/deleteUser\" hx-vals=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"><div class=\"form-control w-full\"><label class=\"label pb-1.5\"><span class=\"label-text font-medium my-3 text-xs md:text-sm\">Nouveau mot de passe (6-12 caractères)</span></label><div class=\"flex flex-col md:flex-row items-center gap-3\"><input type=\"password\" name=\"Password\" x-model=\"pass\" placeholder=\"••••••••\" class=\"input input-bordered input-sm grow\" required minlength=\"6\" maxlength=\"12\"> <button type=\"submit\" class=\"btn btn-neutral btn-outline btn-sm shrink-0\">Modifier le mot de passe</button></div><div x-show=\"pass.length >= 12\" x-cloak class=\"label pb-0 pt-1\"><span class=\"label-text-alt text-warning font-medium\">⚠️ Limite maximale de 12 caractères atteinte</span></div></div></form><!-- SECTION 3: Account Deletion -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf(`{"userId": "%d"}`, u.UserId))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/users.templ`, Line: 169, Col: 75}
+		if u.UserId != 1 {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"pt-4 border-t border-base-200 flex justify-end\"><div x-data=\"{ confirm: false }\"><button type=\"button\" x-show=\"!confirm\" @click=\"confirm = true\" class=\"btn btn-error btn-outline btn-sm\">Supprimer le compte</button> <button type=\"button\" x-show=\"confirm\" x-cloak @click=\"confirm = false\" hx-post=\"/deleteUser\" hx-vals=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprintf(`{"userId": "%d"}`, u.UserId))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/mark/comp/forms/users.templ`, Line: 172, Col: 75}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\" hx-target=\"closest .collapse\" hx-target-error=\"#res\" hx-swap=\"delete\" class=\"btn btn-accent btn-sm animate-pulse font-bold\">Confirmer la suppression ?</button></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var8)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-target=\"closest .collapse\" hx-target-error=\"#res\" hx-swap=\"delete\" class=\"btn btn-accent btn-sm animate-pulse font-bold\">Confirmer la suppression ?</button></div></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

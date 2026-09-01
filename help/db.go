@@ -46,12 +46,17 @@ func BasicDb() *sqlx.DB {
 			projectName TEXT NOT NULL UNIQUE,
 			description TEXT NOT NULL,
 			imagePaths 	TEXT NOT NULL,
-			mImagePath  TEXT NOT NULL
+			mImagePath  TEXT NOT NULL,
+			date        TEXT NOT NULL,
+			maitre      TEXT NOT NULL,
+			emplacement TEXT NOT NULL,
+			programme  TEXT NOT NULL
 		);`,
 		`CREATE TABLE IF NOT EXISTS ratings(
 			ratingId 	INTEGER PRIMARY KEY AUTOINCREMENT,
 			name 		TEXT NOT NULL,
 			comment 	TEXT,
+			approve     INTEGER NOT NULL CHECK (approve >= 0 AND approve <= 1),
 			rating 		INTEGER NOT NULL CHECK (rating >= 0 AND rating <= 50)
 		);`,
 		`CREATE TABLE IF NOT EXISTS members(

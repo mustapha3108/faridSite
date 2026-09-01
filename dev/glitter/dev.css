@@ -2,7 +2,7 @@
 @source "../../frontend/mark/**/*.templ";
 @source "../../frontend/mark/**/*_templ.go";
 @plugin "daisyui" {
-  themes: lofi ;
+  themes: autumn ;
 }
 
 .scale-in-center{animation:scale-in-center 3s cubic-bezier(.25,.46,.45,.94) both}

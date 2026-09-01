@@ -24,6 +24,10 @@ type Project struct {
 	CategoryId  int                     `db:"categoryId"   form:"CategoryId"`
 	ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"required,min=2,max=150"`
 	Description string                  `db:"description"  form:"Description" validate:"required,min=5,max=5000"`
+	Date        string                  `db:"date"         form:"Date"        validate:"required,max=100"`
+	Maitre      string                  `db:"maitre"       form:"Maitre"      validate:"required,min=2,max=150"`
+	Emplacement string                  `db:"emplacement"  form:"Emplacement" validate:"required,min=2,max=150"`
+	Programme   string                  `db:"programme"    form:"Programme"   validate:"required,min=2,max=500"`
 	ImagePaths  string                  `db:"imagePaths"   form:"ImagePaths"`
 	Images      []*multipart.FileHeader `db:"-"            form:"Images"`
 	MImagePath  string                  `db:"mImagePath"   form:"MImagePath"`
@@ -34,8 +38,12 @@ type ProjectMod struct {
 	ProjectId   int                     `db:"projectId"    form:"ProjectId"`
 	UserId      int                     `db:"userId"       form:"UserId"`
 	CategoryId  int                     `db:"categoryId"   form:"CategoryId"`
-	ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"min=2,max=150"`
-	Description string                  `db:"description"  form:"Description" validate:"min=5,max=5000"`
+	ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"omitempty,min=2,max=150"`
+	Description string                  `db:"description"  form:"Description" validate:"omitempty,min=5,max=5000"`
+	Date        string                  `db:"date"         form:"Date"        validate:"omitempty,max=100"`
+	Maitre      string                  `db:"maitre"       form:"Maitre"      validate:"omitempty,min=2,max=150"`
+	Emplacement string                  `db:"emplacement"  form:"Emplacement" validate:"omitempty,min=2,max=150"`
+	Programme   string                  `db:"programme"    form:"Programme"   validate:"omitempty,min=2,max=500"`
 	ImagePaths  string                  `db:"imagePaths"   form:"ImagePaths"`
 	Images      []*multipart.FileHeader `db:"-"            form:"Images"`
 	MImagePath  string                  `db:"mImagePath"   form:"MImagePath"`
@@ -46,6 +54,7 @@ type Rating struct {
 	RatingId int    `db:"ratingId" form:"RatingId"`
 	Name     string `db:"name"     form:"Name"    validate:"required,min=2,max=60"`
 	Comment  string `db:"comment"  form:"Comment" validate:"omitempty,max=1000"`
+	Approve  int    `db:"approve"  form:"Approve" validate:"oneof=0 1"`
 	Rating   int    `db:"rating"   form:"Rating"  validate:"required,gte=0,lte=5"`
 }
 
@@ -114,4 +123,11 @@ type CanNot struct {
 type MessNot struct {
     MessNotId int `db:"messNotId" form:"MessNotId"`
     MessageId int `db:"messageId" form:"MessageId"`
+}
+
+type Page struct {
+	Offset   int
+	Limit    int
+	Table    int
+	Category string
 }

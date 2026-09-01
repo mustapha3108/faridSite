@@ -1,0 +1,20 @@
+package pages
+
+import (
+    "crow/help/strs"
+    "crow/frontend/mark/comp"
+)
+
+
+templ PartenairFace(partenairs []strs.Partenair){
+    @comp.Navbar()
+
+    <div>
+        for _,v := range partenairs {
+            <div>
+                <img src={v.ImagePath} alt="" loading="lazy" class="w-24">
+                <p>{v.PartenairName}</p>
+            </div>
+        }
+    </div>
+}

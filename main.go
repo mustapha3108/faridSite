@@ -18,8 +18,7 @@ import (
 func main() {
 
 
-	//TODO:=CREATE DEV INTERFACE FOR RESET PASSWORDs (dev and farid), CREATE FORMS FOR EVERYTHING
-	//rest of forms, dev interface, upload old paths + new images,if old path not in new path delete oldpath image 
+	//TODO:= stars (approved) / candidats  / projects / logs /
 
 	godotenv.Load()
 
@@ -39,8 +38,13 @@ func main() {
 		return help.Hrender(c, pages.Home(help.Logcheck(c)))
 	})
 
-	app.Get("/ping", func(c fiber.Ctx) error {
-		return c.SendString("yo")
+	app.Get("/partenairs", func(c fiber.Ctx) error {
+		var partenairs []strs.Partenair
+		err := db.Select(&partenairs, `SELECT * FROM partenairs`)
+		if err != nil {
+			return c.SendString(help.ShowError(err))
+		}
+		return help.Hrender(c, pages.PartenairFace(partenairs))
 	})
 
 	//atelier
@@ -50,7 +54,12 @@ func main() {
 
 	//projets
 	app.Get("/projets", func(c fiber.Ctx) error {
-		return help.Hrender(c, pages.Projets())
+		var projects []strs.Project
+		err:= db.Select(&projects , `SELECT * FROM projects`)
+		if err != nil {
+			return c.SendString(err.Error())
+		}
+		return help.Hrender(c, pages.Projets(projects))
 	})
 
 	//book
@@ -165,6 +174,13 @@ func main() {
 			    return c.SendString(help.ShowError(err))
 			}
 			return help.Render(c, comp.CategoriesMod(user, categories))
+		case "Partenaire":
+			var partenairs []strs.Partenair
+			err := db.SelectContext(c, &partenairs, "SELECT * FROM partenairs")
+			if err != nil {
+			    return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.PartenairsMod(user, partenairs))
 		}	
 		return c.SendString("page introuvable")
 	})
@@ -309,6 +325,10 @@ func main() {
 	    if err := help.Validate.Struct(req); err != nil {
 	        return c.SendString(help.ShowError(err))
 	    }
+
+		if req.UserId == 1 {
+			req.Access = "fcmd"
+		}
 	
 	    _, err := db.Exec(`UPDATE users SET userName = ?, access = ? WHERE userId = ?`, req.UserName, req.Access, req.UserId)
 	    if err != nil {
@@ -520,7 +540,10 @@ func main() {
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
 		}
 		partenairId := c.FormValue("partenairId")
-		partenairImagePath := c.FormValue("imagePath")
+		var partenairImagePath string
+		if err:= db.Get(&partenairImagePath, `SELECT imagePath FROM partenairs WHERE partenairId = ?`, partenairId) ; err!= nil {
+			return c.SendString(help.ShowError(err))
+		}
 		_,err := db.Exec(`DELETE FROM partenairs WHERE PartenairID = ?`, partenairId)
 		if err!=nil{
 			return c.SendString(help.ShowError(err))
@@ -552,6 +575,20 @@ func main() {
 	})
 
 	app.Post("/deleteRate", help.Authmid, func (c fiber.Ctx) error {
+		user:=c.Locals("user").(*strs.User)
+		if !strings.Contains(user.Access, "f"){
+			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
+		}
+		ratingId:= c.FormValue("ratingId")
+		_,err := db.Exec(`DELETE FROM ratings WHERE ratingId = ?`, ratingId)
+		if err!= nil {
+			return c.SendString(help.ShowError(err))
+		}
+		c.Set("HX-Trigger", "success")
+		return c.SendString("")
+	})
+
+	app.Post("/approveRate", help.Authmid, func (c fiber.Ctx) error {
 		user:=c.Locals("user").(*strs.User)
 		if !strings.Contains(user.Access, "f"){
 			return c.SendString("Vous n'avez pas le droit d'effectuer cette opération.")
@@ -1031,6 +1068,73 @@ func main() {
 
 		trigger := fmt.Sprintf(`{"notif": {"messages": %d, "candidats": %d}}`, messages, candidats)
 		c.Set("HX-Trigger", trigger)
+		return c.SendString("")
+	})
+
+		app.Post("/paginate", func (c fiber.Ctx) error {
+		page:= new(strs.Page)
+		if err:=c.Bind().Form(page); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		switch page.Table {
+		case 1:
+			var projects []strs.Project
+			if page.Category == "" {
+				err := db.Select(&projects, `SELECT * FROM projects ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+				if err != nil {
+					return c.SendString(help.ShowError(err))
+				}
+			} else {
+				err := db.Select(&projects, `SELECT * FROM projects WHERE categoryId = ? ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Category, page.Limit, page.Offset) 
+				if err != nil {
+					return c.SendString(help.ShowError(err))
+				}
+			}
+			return help.Hrender(PageProjects(projects))
+		case 2:
+			var projects []strs.Project
+			if page.Category == "" {
+				err := db.Select(&projects, `SELECT * FROM projects ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+				if err != nil {
+					return c.SendString(help.ShowError(err))
+				}
+			} else {
+				err := db.Select(&projects, `SELECT * FROM projects WHERE categoryId = ? ORDER BY projectId DESC LIMIT ? OFFSET ?`, page.Category, page.Limit, page.Offset) 
+				if err != nil {
+					return c.SendString(help.ShowError(err))
+				}
+			}
+			return help.Hrender(PageProjectsUsers(projects))
+		case 3:
+			var messages []strs.Message
+			err := db.Select(&messages, `SELECT * FROM messages ORDER BY messagesId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+			if err != nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Hrender(PageMessages(messages))
+		case 4:
+			var candidats []strs.JobApplication
+			err := db.Select(&candidats, `SELECT * FROM jobApplications ORDER BY apId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+			if err != nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Hrender(PageCandidats(candidats))
+		case 5:
+			var ratings []strs.Rating
+			err := db.Select(&ratings, `SELECT * FROM ratings ORDER BY ratingId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+			if err != nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Hrender(PageRatings(ratings))
+		case 6:
+			var ratings []strs.Rating
+			err := db.Select(&ratings, `SELECT * FROM ratings ORDER BY ratingId DESC LIMIT ? OFFSET ?`, page.Limit, page.Offset) 
+			if err != nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Hrender(PageRatingsUasers(ratings))
+		}
+
 		return c.SendString("")
 	})
 

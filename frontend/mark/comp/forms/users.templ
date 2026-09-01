@@ -9,7 +9,7 @@ import (
 templ Users(users []strs.User) {
     <div class="w-full max-w-4xl mx-auto space-y-3 p-4">
         for i, u := range users {
-            if u.UserId != 1 && u.UserId != 2 {
+            if u.UserId != 2 {
                 @userAccordion(u, i == 0)
             }
         }
@@ -63,6 +63,7 @@ templ userAccordion(u strs.User, isFirst bool) {
                 </div>
 
                 <!-- Access Rights (cmd) -->
+                if u.UserId !=1 {
                 <div class="form-control w-full">
                     <label class="label pb-1.5">
                         <span class="label-text font-medium">Droits d'accès</span>
@@ -102,6 +103,7 @@ templ userAccordion(u strs.User, isFirst bool) {
 
                     <input type="hidden" name="Access" :value="accessString" />
                 </div>
+                }
 
                 <div class="flex justify-end pt-1">
                     <button type="submit" class="btn btn-primary btn-sm">
@@ -149,6 +151,7 @@ templ userAccordion(u strs.User, isFirst bool) {
             </form>
 
             <!-- SECTION 3: Account Deletion -->
+            if u.UserId != 1 {
             <div class="pt-4 border-t border-base-200 flex justify-end">
                 <div x-data="{ confirm: false }">
                     <button
@@ -176,6 +179,7 @@ templ userAccordion(u strs.User, isFirst bool) {
                     </button>
                 </div>
             </div>
+            }
 
         </div>
     </div>
