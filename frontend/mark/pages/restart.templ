@@ -1,0 +1,16 @@
+package pages
+
+import (
+    "crow/help/strs"
+)
+
+templ Restart(user *strs.User){
+    if user.UserId == 2 {
+        <form hx-post="/reset" class="fieldset">
+            <input class="input" type="password" name="password">
+            <button class="btn">submit</button>
+        </form>
+    } else {
+        <h1 class="text-9xl text-error">GET OUT OF HERE DEMON</h1>
+    }
+}

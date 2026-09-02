@@ -9,6 +9,10 @@ type Project struct {
     CategoryId  int                     `db:"categoryId"   form:"CategoryId"`
     ProjectName string                  `db:"projectName"  form:"ProjectName" validate:"required,min=2,max=150"`
     Description string                  `db:"description"  form:"Description" validate:"required,min=5,max=5000"`
+    Date        string                  `db:"date"         form:"Date"        validate:"required,max=100"`
+    Maitre      string                  `db:"maitre"       form:"Maitre"      validate:"required,min=2,max=150"`
+    Emplacement string                  `db:"emplacement"  form:"Emplacement" validate:"required,min=2,max=150"`
+    Programme   string                  `db:"programme"    form:"Programme"   validate:"required,min=2,max=500"`
     ImagePaths  string                  `db:"imagePaths"   form:"ImagePaths"`
     Images      []*multipart.FileHeader `db:"-"            form:"Images"`
     MImagePath string                  `db:"mImagePath"   form:"MImagePath"`
@@ -132,6 +136,75 @@ templ CreateProject(user *strs.User, categories []strs.Category) {
                     </select>
 
                 </label>
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- Date -->
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text font-medium">
+                                Date / Année
+                            </span>
+                        </div>
+                        <input
+                            type="text"
+                            name="Date"
+                            class="input input-bordered w-full"
+                            placeholder="ex: 2024"
+                            required
+                        />
+                    </label>
+
+                    <!-- Emplacement -->
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text font-medium">
+                                Emplacement
+                            </span>
+                        </div>
+                        <input
+                            type="text"
+                            name="Emplacement"
+                            class="input input-bordered w-full"
+                            placeholder="ex: Alger"
+                            required
+                        />
+                    </label>
+
+                    <!-- Maitre de l'ouvrage -->
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text font-medium">
+                                Maître de l'ouvrage
+                            </span>
+                        </div>
+                        <input
+                            type="text"
+                            name="Maitre"
+                            class="input input-bordered w-full"
+                            placeholder="ex: Ministère de l'Habitat, Privé..."
+                            required
+                        />
+                    </label>
+
+                    <!-- Programme -->
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text font-medium">
+                                Programme
+                            </span>
+                        </div>
+                        <input
+                            type="text"
+                            name="Programme"
+                            class="input input-bordered w-full"
+                            placeholder="ex: Logements collectifs, Bureaux..."
+                            required
+                        />
+                    </label>
+
+                </div>
 
 
                 <!-- Description -->

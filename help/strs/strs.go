@@ -126,8 +126,19 @@ type MessNot struct {
 }
 
 type Page struct {
-	Offset   int
-	Limit    int
-	Table    int
-	Category string
+	Offset   int    `form:"offset"`
+	Limit    int    `form:"limit"`
+	Category int    `form:"category"`
+}
+
+type Log struct {
+	LogId     int64  `db:"logId"      form:"LogId"`
+	Message   string `db:"message"    form:"Message"`
+	Type      int    `db:"type"       form:"Type"`
+	CreatedAt string `db:"created_at" form:"CreatedAt"`
+}
+
+type ProjectWithCategory struct {
+    Project                
+    CategoryName string `db:"categoryName"`
 }

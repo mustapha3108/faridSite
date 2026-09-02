@@ -47,18 +47,119 @@ func main() {
 
 	//atelier
 	app.Get("/atelier", func(c fiber.Ctx) error {
-		return help.Hrender(c, pages.Atelier())
+		var members []strs.Member
+		err := db.SelectContext(c, &members, `SELECT * FROM members`)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		return help.Hrender(c, pages.Atelier(members))
 	})
 
 	//projets
 	app.Get("/projets", func(c fiber.Ctx) error {
-		var projects []strs.Project
-		err:= db.Select(&projects , `SELECT * FROM projects`)
+		var list []strs.ProjectWithCategory
+		query := `
+		    SELECT 
+		        p.*,
+		        c.categoryName
+		    FROM projects p
+		    LEFT JOIN categories c ON p.categoryId = c.categoryId
+		    ORDER BY p.projectId DESC LIMIT 4
+		`
+		err := db.SelectContext(c.Context(), &list, query)
 		if err != nil {
-			return c.SendString(err.Error())
+		    return err
 		}
-		return help.Hrender(c, pages.Projets(projects))
+		var categories []strs.Category
+		err = db.SelectContext(c, &categories, `SELECT * FROM categories`)
+		if err!= nil {
+			return c.SendString(help.ShowError(err))
+		}
+		con := len(list) > 3
+		if con {
+			list = list[:3]
+		}
+		return help.Hrender(c, pages.Projets(list, categories, 3, 0, con, 0))
 	})
+
+
+	app.Get("/projets/category/:category", func(c fiber.Ctx) error {
+		category, _ := strconv.Atoi(c.Params("category"))
+		var list []strs.ProjectWithCategory
+		query := `
+		    SELECT 
+		        p.*,
+		        c.categoryName
+		    FROM projects p
+		    LEFT JOIN categories c ON p.categoryId = c.categoryId
+			WHERE p.categoryId = ?
+		    ORDER BY p.projectId DESC LIMIT 4
+		`
+		err := db.SelectContext(c.Context(), &list, query, category)
+		if err != nil {
+		    return err
+		}
+		var categories []strs.Category
+		err = db.SelectContext(c, &categories, `SELECT * FROM categories`)
+		if err!= nil {
+			return c.SendString(help.ShowError(err))
+		}
+		con := len(list) > 3
+		if con {
+			list = list[:3]
+		}
+		return help.Hrender(c, pages.Projets(list, categories, 3, 0, con, category))
+		
+	})
+//
+	//app.Get("/projets/:id", func(c fiber.Ctx) error {
+//
+	//})
+//
+	app.Post("/moreProjects", func(c fiber.Ctx) error {
+		page := new(strs.Page)
+		if err:= c.Bind().Form(page); err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		page.Offset = page.Offset + 1
+		var list []strs.ProjectWithCategory
+		if page.Category == 0 {
+			query := `
+			    SELECT 
+			        p.*,
+			        c.categoryName
+			    FROM projects p
+			    LEFT JOIN categories c ON p.categoryId = c.categoryId
+			    ORDER BY p.projectId DESC LIMIT ? OFFSET ?
+			`
+			err := db.SelectContext(c.Context(), &list, query, page.Limit + 1, page.Limit * page.Offset)
+			if err != nil {
+			    return err
+			}
+		}else{
+			query := `
+			    SELECT 
+			        p.*,
+			        c.categoryName
+			    FROM projects p
+			    LEFT JOIN categories c ON p.categoryId = c.categoryId
+				WHERE p.categoryId = ?
+			    ORDER BY p.projectId DESC LIMIT ? OFFSET ?
+			`
+			err := db.SelectContext(c.Context(), &list, query, page.Category, page.Limit + 1, page.Limit * page.Offset)
+			if err != nil {
+			    return err
+			}
+		}
+		con := len(list) > page.Limit
+		if con {
+			list = list[:page.Limit]
+		}
+		return help.Render(c, comp.ProjectSection(list, page.Limit, page.Offset, con, page.Category))
+	})
+
+
+
 
 	//book
 	app.Get("/book", func(c fiber.Ctx) error {
@@ -137,12 +238,16 @@ func main() {
 		if err:=help.Login(c, db); err!=nil {
 			return c.SendString((help.ShowError(err)))
 		}
+
 		return help.Redirect(c, "/dash")
 	})
 
 	//dashboard
 	app.Get("/dash", help.Authmid, func(c fiber.Ctx) error {
 		user:= c.Locals("user").(*strs.User)
+		if user.Access == "sss" {
+			return help.Hrender(c, pages.Restart(user))
+		}
 		return help.Hrender(c, pages.Dash(user))
 	})
 
@@ -242,6 +347,13 @@ func main() {
 				return c.SendString(help.ShowError(err))
 			}
 			return help.Render(c, comp.SoftwareMod(user, soft))	
+		case "Logs":
+			var logs []strs.Log
+			err:= db.Select(&logs, `SELECT * FROM logs ORDER BY logId DESC`)
+			if err!=nil {
+				return c.SendString(help.ShowError(err))
+			}
+			return help.Render(c, comp.LogsMod(logs))	
 		}
 		return c.SendString("page introuvable")
 	})
@@ -461,8 +573,11 @@ func main() {
 		if _, err:=db.Exec(`UPDATE users SET password = ? WHERE access = ?`, password, "fcmd"); err!= nil{
 			return c.SendString(help.ShowError(err))
 		}
-		c.Set("HX-Trigger", "success")
-		return c.SendString("")
+		if err:=help.Logout(c); err!=nil{
+			return c.SendString(help.ShowError(err))
+		} else {
+			return help.Redirect(c, "/")
+		}
 	})
 
 	//categories
@@ -773,23 +888,23 @@ func main() {
 		//logic
 		apply:= new(strs.JobApplication)
 		if err:=c.Bind().Form(apply); err!=nil {
-			return c.SendString(help.ShowError(err))
+			return c.SendString(err.Error())
 		}
 		if err:= help.Validate.Struct(apply); err!=nil {
-			return c.SendString(help.ShowError(err))
+			return c.SendString(err.Error())
 		} 
 
 		//pdf
 		cvPath, err:= help.SavePDF(c, apply.Cv)
 		if err !=nil {
-			return c.SendString(help.ShowError(err))
+			return c.SendString(err.Error())
 		}
 		letterPath, err := help.SavePDF(c, apply.Letter)
 		if err !=nil {
 			if err2:= help.DeletePDF(cvPath); err2!=nil {
 				return c.SendString(help.ShowError(err2))
 			}
-			return c.SendString(help.ShowError(err))
+			return c.SendString(err.Error())
 		}
 		
 		apply.CvPath = cvPath
@@ -798,15 +913,15 @@ func main() {
 		res,err := db.Exec(`INSERT INTO jobApplications (firstName, lastName, email, object, message, software, cv, letter) VALUES (?,?,?,?,?,?,?,?)`,
 						apply.FirstName, apply.LastName, apply.Email, apply.Object, apply.Message, apply.Software, apply.CvPath,apply.LetterPath)
 		if err!=nil {
-			return c.SendString(help.ShowError(err))
+			return c.SendString(err.Error())
 		} else {
 			id, err := res.LastInsertId()
 			if err!=nil {
-				return c.SendString(help.ShowError(err))
+				return c.SendString(err.Error())
 			}
 			_,err = db.Exec(`INSERT INTO canNot (candidatId) VALUES (?)`, id)
 			if err!=nil {
-				return c.SendString(help.ShowError(err))
+				return c.SendString(err.Error())
 			}
 		}
 		c.Set("HX-Trigger", "success")
@@ -958,10 +1073,22 @@ func main() {
 		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
 
 		//enter into te database
-		_, err = db.NamedExec(
-		    `INSERT INTO projects (userId, categoryId, projectName, description, imagePaths, mImagePath)
-		     VALUES (:userId, :categoryId, :projectName, :description, :imagePaths, :mImagePath)`,
-		    project,
+		_, err = db.ExecContext(
+		    c.Context(),
+		    `INSERT INTO projects (
+		        userId, categoryId, projectName, description, 
+		        imagePaths, mImagePath, date, maitre, emplacement, programme
+		    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		    project.UserId,
+		    project.CategoryId,
+		    project.ProjectName,
+		    project.Description,
+		    project.ImagePaths,
+		    project.MImagePath,
+		    project.Date,
+		    project.Maitre,
+		    project.Emplacement,
+		    project.Programme,
 		)
 		if err != nil {
 			toDelete := strings.Split(project.ImagePaths, ";")
@@ -977,6 +1104,12 @@ func main() {
 			}
 		    return c.SendString(help.ShowError(err))
 		}
+
+		message := fmt.Sprintf("%s a créé un nouveau projet : %s", user.UserName, project.ProjectName)
+		if _, err := db.ExecContext(c.Context(), `INSERT INTO logs(message, type) VALUES (?,?)`, message,1); err != nil {
+		    return c.SendString(help.ShowError(err))
+		}
+
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
 
@@ -1052,8 +1185,32 @@ func main() {
 		}
 		project.ImagePaths = strings.TrimSuffix(project.ImagePaths, ";")
 		
-		_, err = db.Exec(`UPDATE projects SET userId = ?,categoryId = ?,projectName = ?,description = ?,imagePaths = ?,mImagePath = ? WHERE projectId = ?`,
-						project.UserId,project.CategoryId,project.ProjectName,project.Description,project.ImagePaths,project.MImagePath,project.ProjectId)
+		_, err = db.ExecContext(
+		    c.Context(),
+		    `UPDATE projects SET 
+		        userId = ?,
+		        categoryId = ?,
+		        projectName = ?,
+		        description = ?,
+		        imagePaths = ?,
+		        mImagePath = ?,
+		        date = ?,
+		        maitre = ?,
+		        emplacement = ?,
+		        programme = ?
+		    WHERE projectId = ?`,
+		    project.UserId,
+		    project.CategoryId,
+		    project.ProjectName,
+		    project.Description,
+		    project.ImagePaths,
+		    project.MImagePath,
+		    project.Date,
+		    project.Maitre,
+		    project.Emplacement,
+		    project.Programme,
+		    project.ProjectId,
+		)
 		if err != nil {
 			for _,v:= range comPaths {
 				if err2:= help.DeleteImage(v); err2!=nil {
@@ -1067,6 +1224,11 @@ func main() {
 					return c.SendString(help.ShowError(err2))
 				}
 			}
+		}
+
+		message := fmt.Sprintf("%s a modifié un projet : %s", user.UserName, project.ProjectName)
+		if _, err := db.ExecContext(c.Context(), `INSERT INTO logs(message, type) VALUES (?,?)`, message, 2); err != nil {
+		    return c.SendString(help.ShowError(err))
 		}
 		c.Set("HX-Trigger", "success")
 		return c.SendString("")
@@ -1082,11 +1244,16 @@ func main() {
 		//get from database and delete
 		var mPath string
 		var sPaths string
+		var projectName string
 		err := db.Get(&mPath, `SELECT mImagePath FROM projects WHERE projectId = ?`, id)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		}
 		err = db.Get(&sPaths, `SELECT imagePaths FROM projects WHERE projectId = ?`, id)
+		if err!=nil {
+			return c.SendString(help.ShowError(err))
+		}
+		err = db.Get(&projectName, `SELECT projectName FROM projects WHERE projectId = ?`, id)
 		if err!=nil {
 			return c.SendString(help.ShowError(err))
 		}
@@ -1106,6 +1273,11 @@ func main() {
 			if err!=nil {
 				return c.SendString(help.ShowError(err))
 			}
+		}
+
+		message := fmt.Sprintf("%s a supprimé un projet : %s", user.UserName, projectName)
+		if _, err := db.ExecContext(c.Context(), `INSERT INTO logs(message, type) VALUES (?,?)`, message, 3); err != nil {
+		    return c.SendString(help.ShowError(err))
 		}
 		
 		c.Set("HX-Trigger", "success")

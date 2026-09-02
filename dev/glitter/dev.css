@@ -1,12 +1,40 @@
 @import "tailwindcss";
 @source "../../frontend/mark/**/*.templ";
 @source "../../frontend/mark/**/*_templ.go";
-@plugin "daisyui" {
-  themes: autumn ;
+
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "nordic-botanic";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: #EEF2F6;         /* Cool Nordic Skyscraper Gray */
+  --color-base-200: #F8FAFC;         /* Frosted Glass White cards */
+  --color-base-300: #D4DDE7;         /* Brushed steel joint borders */
+  --color-base-content: #0F172A;     /* Deep Slate Black typography */
+
+  --color-primary: #182C40;          /* Deep High-Rise Prussian Navy (Main buttons) */
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #465738;        /* Deep Mediterranean Olive Green (Secondary & Badges) */
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #5E754C;           /* Fresh Olive Leaf */
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #17202A;          /* Charcoal Gunmetal */
+  --color-neutral-content: #EEF2F6;
+  --radius-box: 0.375rem;
+}
+.scale-in-center {
+    animation: scale-in-center 3s cubic-bezier(.25, .46, .45, .94) both;
 }
 
-.scale-in-center{animation:scale-in-center 3s cubic-bezier(.25,.46,.45,.94) both}
-@keyframes scale-in-center{0%{transform:scale(0);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes scale-in-center {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
 
 .progress-bar {
     position: fixed;
@@ -24,6 +52,6 @@
     opacity: 1;
 }
 
-.crow{
-    @apply gap-6 link fieldset bg-base-200 border-base-300 rounded-box border p-4 size-36
+.crow {
+    @apply gap-6 link fieldset bg-base-200 border-base-300 rounded-box border p-4 size-36;
 }

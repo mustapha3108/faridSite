@@ -113,6 +113,22 @@ func BasicDb() *sqlx.DB {
 			softwareName TEXT NOT NULL UNIQUE,
 			required     INTEGER NOT NULL DEFAULT 0
 		)`,
+		`CREATE TABLE IF NOT EXISTS logs(
+			logId        INTEGER PRIMARY KEY AUTOINCREMENT,
+			message      TEXT NOT NULL,
+			type         INETEGR NOT NULL,
+			created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE TRIGGER IF NOT EXISTS trim_logs_trigger
+		AFTER INSERT ON logs
+		BEGIN
+		    DELETE FROM logs
+		    WHERE logId NOT IN (
+		        SELECT logId FROM logs
+		        ORDER BY logId DESC
+		        LIMIT 100
+		    );
+		END;`,
 	}
 
 	for _, v := range tables {
@@ -131,7 +147,7 @@ func BasicDb() *sqlx.DB {
 		log.Fatal("error creating: 	", err)
 	}
 
-	devPassword, err := Encode("crow3108")
+	devPassword, err := Encode("crowanddeclaration:hollowpurple")
 	if err!=nil{
 		log.Fatal("error creating: 	", err)
 	}

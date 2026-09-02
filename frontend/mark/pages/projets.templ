@@ -1,11 +1,32 @@
 package pages 
 
+
 import(
     "crow/frontend/mark/comp"
     "crow/help/strs"
+    "fmt"
 )
 
-templ Projets(projects []strs.Project){
+templ Projets(projects []strs.ProjectWithCategory, categories []strs.Category, limit int, offset int, con bool, category int){
     @comp.Navbar()
-    <div></div>
+    @uiStuff(categories)
+    @comp.ProjectSection(projects, limit, offset, con,  category)
 }
+
+
+templ uiStuff(cat []strs.Category) {
+    <div class="w-full bg-neutral flex justify-end">
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn m-1">categories</div>
+          <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+            <li><a>Item 1</a></li>
+            <li><a>Item 2</a></li>
+            for _,c:=range cat {
+                <li><a href={ templ.SafeURL(fmt.Sprintf("/projets/category/%d", c.CategoryId)) }>{c.CategoryName}</a></li>
+            }
+          </ul>
+        </div>
+    </div>
+}
+
+
