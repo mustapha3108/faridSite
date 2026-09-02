@@ -5,3 +5,5 @@
 dev/node_modules/
 tmp/
 crow
+frontend/glitter/media/pdf
+frontend/glitter/media/dynamic
