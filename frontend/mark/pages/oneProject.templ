@@ -1,0 +1,32 @@
+package pages
+
+import(
+    "crow/help/strs"
+    "strings"
+    "crow/frontend/mark/comp"
+)
+
+templ OneProject(project strs.ProjectWithCategory){
+    @comp.Navbar()
+    <div class="flex flex-wrap justify-center items-center">
+        <div class="flex-1">
+            <h1>{project.ProjectName}</h1>
+            <p>{project.CategoryName}</p>
+            <p>{project.Description}</p>
+            <p>{project.Emplacement}</p>
+            <p>{project.Maitre}</p>
+            <p>{project.Programme}</p>
+            <p>{project.Date}</p>
+        </div>
+
+        <div class="flex-1">
+            <img src={"/" + project.MImagePath} alt="project main hto">
+        </div>
+    </div>
+
+    <div class="flex flex-wrap">
+        for _,v:=range strings.Split(project.ImagePaths, ";") {
+            <img src={"/" + v} alt="project image" class="w-24 m-3">
+        }
+    </div>
+}

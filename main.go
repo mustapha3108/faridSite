@@ -111,11 +111,26 @@ func main() {
 		return help.Hrender(c, pages.Projets(list, categories, 3, 0, con, category))
 		
 	})
-//
-	//app.Get("/projets/:id", func(c fiber.Ctx) error {
-//
-	//})
-//
+
+	app.Get("/projets/:id", func(c fiber.Ctx) error {
+		id, _ := strconv.Atoi(c.Params("id"))
+		var project strs.ProjectWithCategory
+		query := `
+		    SELECT 
+		        p.*,
+		        c.categoryName
+		    FROM projects p
+		    LEFT JOIN categories c ON p.categoryId = c.categoryId
+			WHERE p.projectId = ?
+		    ORDER BY p.projectId DESC LIMIT 4
+		`
+		err := db.GetContext(c.Context(), &project, query, id)
+		if err != nil {
+		    return err
+		}
+		return help.Hrender(c, pages.OneProject(project))
+	})
+
 	app.Post("/moreProjects", func(c fiber.Ctx) error {
 		page := new(strs.Page)
 		if err:= c.Bind().Form(page); err!=nil {

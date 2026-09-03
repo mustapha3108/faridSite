@@ -1,12 +1,107 @@
 package pages
 
-import(
+import (
     "crow/frontend/mark/comp"
 )
 
-templ Book(){
+templ Book() {
     @comp.Navbar()
-    <div>
-        book page
+
+    <div class="min-h-screen bg-base-200/50 py-8 px-4 flex flex-col items-center">
+        <!-- Header -->
+        <div class="text-center mb-6 space-y-1">
+            <h1 class="text-3xl font-extrabold text-base-content">Notre Book d'Architecture</h1>
+            <p class="text-xs text-base-content/60">Feuilletez notre portfolio interactif</p>
+        </div>
+
+        <!-- Controls (Previous / Next / Fullscreen) -->
+        <div class="flex items-center gap-3 mb-4">
+            <button id="prevBtn" class="btn btn-sm btn-outline btn-primary">◀ Précédent</button>
+            <span id="pageCounter" class="text-xs font-semibold px-2 text-base-content/70">Chargement...</span>
+            <button id="nextBtn" class="btn btn-sm btn-outline btn-primary">Suivant ▶</button>
+        </div>
+
+        <!-- Flipbook Container -->
+        <div class="relative w-full max-w-4xl flex justify-center items-center shadow-2xl rounded-2xl bg-base-100 p-4 border border-base-300">
+            <div id="loadingIndicator" class="loading loading-spinner loading-lg text-primary my-20"></div>
+            <div id="book" class="hidden"></div>
+        </div>
     </div>
+
+    <!-- 1. PDF.js (to parse the PDF) and StPageFlip (for the Calaméo 3D page curl) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        async function initFlipBook(pdfUrl) {
+            const loadingEl = document.getElementById('loadingIndicator');
+            const bookEl = document.getElementById('book');
+            const counterEl = document.getElementById('pageCounter');
+
+            try {
+                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                const totalPages = pdf.numPages;
+
+                // Render each PDF page as a canvas inside the book element
+                for (let i = 1; i <= totalPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'page-container bg-white shadow-md flex justify-center items-center overflow-hidden';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+
+                    const ctx = canvas.getContext('2d');
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                    pageDiv.appendChild(canvas);
+                    bookEl.appendChild(pageDiv);
+                }
+
+                loadingEl.style.display = 'none';
+                bookEl.classList.remove('hidden');
+
+                // Initialize StPageFlip (Calaméo 3D effect)
+                const pageFlip = new St.PageFlip(bookEl, {
+                    width: 550,
+                    height: 750,
+                    size: 'stretch',
+                    minWidth: 315,
+                    maxWidth: 1000,
+                    minHeight: 420,
+                    maxHeight: 1350,
+                    showCover: true,
+                    mobileScrollSupport: false
+                });
+
+                pageFlip.loadFromHTML(document.querySelectorAll('.page-container'));
+
+                // Update counter
+                const updateCounter = () => {
+                    counterEl.textContent = `Page ${pageFlip.getCurrentPageIndex() + 1} / ${totalPages}`;
+                };
+                updateCounter();
+
+                pageFlip.on('flip', updateCounter);
+
+                // Button controls
+                document.getElementById('prevBtn').onclick = () => pageFlip.flipPrev();
+                document.getElementById('nextBtn').onclick = () => pageFlip.flipNext();
+
+            } catch (err) {
+                console.error("Error loading PDF book:", err);
+                loadingEl.textContent = "Erreur lors du chargement du document.";
+            }
+        }
+
+        // Pass your PDF file path here:
+        initFlipBook('/media/static/summary.pdf');
+    </script>
 }

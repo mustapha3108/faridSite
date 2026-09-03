@@ -2,6 +2,7 @@ package comp
 
 import(
     "crow/help/strs"
+    "fmt"
 )
 
 templ ProjectSection(projects []strs.ProjectWithCategory, limit int, offset int, con bool, category int){
@@ -16,7 +17,8 @@ templ ProjectSection(projects []strs.ProjectWithCategory, limit int, offset int,
 }
 
 templ projectDiv(p strs.ProjectWithCategory) {
-    <div class="card bg-base-100 w-96 shadow-sm m-6">
+    <a href={ templ.SafeURL(fmt.Sprintf("/projets/%d", p.ProjectId)) }
+     class="card bg-base-100 w-96 shadow-sm m-6">
       <figure>
         <img
           src={"/" + p.MImagePath}
@@ -29,7 +31,7 @@ templ projectDiv(p strs.ProjectWithCategory) {
         <h1>{p.CategoryName}</h1>
         <p>{p.Description}</p>
       </div>
-    </div>
+    </a>
 }
 
 templ more(limit int, offset int, category int){
